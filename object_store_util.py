@@ -10,6 +10,19 @@ import socket
 import object_store_exceptions
 
 
+class EntryConfig:
+
+    def __init__(self, dtype, shape, is_numpy=True, mapped_block_idx=-1):
+        """
+        Each entry config represents configuration of an entry in one track
+        """
+        self.dtype = dtype
+        self.shape = shape
+        self.is_numpy = is_numpy
+        self.mapped_block_idx = mapped_block_idx
+        self.pending_readers = 0
+
+
 class RWLock:
 
     def __init__(self):
@@ -49,7 +62,8 @@ class RWLock:
 class ConnectionDescriptor:
 
     def __init__(self, ip, port, authkey):
-        """ Describes the location of a python multiprocessing manager
+        """
+        Describes the location of a python multiprocessing manager
 
         :param ip: ip address, could be string 'localhost'
         :param port: 0 - 65535
@@ -91,3 +105,23 @@ def get_local_free_port(num, low, high):
         if len(port_list) == num:
             return port_list
     raise object_store_exceptions.SMOSPortBusy(f"Out of free ports (required {num}, available {len(port_list)})")
+
+
+def log2terminal(info_type, msg, worker_type=""):
+    """
+    log message to terminal in uniform format
+    """
+    print(f"[(pid={os.getpid()}){worker_type}] {info_type}: {msg}")
+
+
+def serialize_numpy_list(numpy_list):
+    """
+    Serialize a list of numpy arrays into multiple tracks.
+
+    :param numpy_list:
+    :return:
+    """
+    # TODO
+    # check if its a list of numpy arrays
+    # construct entry header for arrays
+    pass
