@@ -11,5 +11,5 @@ class SMOSPortBusy(Exception):
     pass
 
 
-class SMOSInputFormatError(Exception):
+class SMOSInputTypeError(Exception):
     pass

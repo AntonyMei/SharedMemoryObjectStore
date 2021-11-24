@@ -118,29 +118,66 @@ def log2terminal(info_type, msg, worker_type=""):
 
 def serialize_numpy_list(numpy_list):
     """
-    Serialize a list of numpy arrays into multiple tracks. This is the recommended
-    way of putting lists of numpy arrays into shared memory object store.
+    Serialize a list of numpy arrays for multiple tracks. This is the recommended
+    way of putting a list of numpy arrays into shared memory object store.
 
-    :exception: object_store_exceptions.SMOSInputFormatError will be raised if input
+    :exception: object_store_exceptions.SMOSInputTypeError will be raised if input
                 is not a list of numpy arrays
 
     :param numpy_list: a list of numpy to be serialized
-    :return: entry_header_list, numpy_list
+    :return: entry_config_list
     """
     # check if input is a list of numpy arrays
     if not type(numpy_list) == list:
-        raise object_store_exceptions.SMOSInputFormatError(f"Input not list")
+        raise object_store_exceptions.SMOSInputTypeError(f"Input not list.")
     if len(numpy_list) == 0:
-        return [], []
+        return []
     if not type(numpy_list[0]) == np.ndarray:
-        raise object_store_exceptions.SMOSInputFormatError(f"Expected numpy list, got list of"
-                                                           f" {type(numpy_list[0])}")
+        raise object_store_exceptions.SMOSInputTypeError(f"Expected numpy list, got list of"
+                                                         f" {type(numpy_list[0])}.")
 
     # construct entry config for each array
     entry_config_list = []
     for np_array in numpy_list:
         entry_config = EntryConfig(dtype=np_array.dtype, shape=np_array.shape, is_numpy=True)
         entry_config_list.append(entry_config)
-    return entry_config_list, numpy_list
+    return entry_config_list
 
 
+def serialize_numpy(numpy_array):
+    """
+    Serialize a numpy array for one track. This is the recommended way of putting a
+     numpy array into shared memory object store.
+
+    :exception: object_store_exceptions.SMOSInputTypeError will be raised if input
+                is not a numpy array
+
+    :param numpy_array: numpy array to be serialized
+    :return: entry_config
+    """
+    # check if input is a numpy array
+    if not type(numpy_array) == np.ndarray:
+        raise object_store_exceptions.SMOSInputTypeError(f"Input not numpy array.")
+
+    # construct entry config for each array
+    entry_config = EntryConfig(dtype=numpy_array.dtype, shape=numpy_array.shape, is_numpy=True)
+    return entry_config
+
+
+def serialize(object):
+    """
+    This is a general serializer based on pickle. Note that (list of) numpy arrays
+    should use serialize_numpy_list instead for better performance.
+
+    :return:
+    """
+
+
+def deserialize(buffer):
+    """
+    This is a general deserializer for objects
+
+    :param buffer:
+    :return:
+    """
+    pass
