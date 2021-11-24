@@ -5,6 +5,7 @@ This file contains utility functions for Shared Memory Object Store
 
 import os
 import multiprocessing
+import pickle
 import socket
 
 import numpy as np
@@ -17,6 +18,13 @@ class EntryConfig:
     def __init__(self, dtype, shape, is_numpy=True, mapped_block_idx=-1):
         """
         Each entry config represents configuration of an entry in one track
+
+        :param dtype: If current entry represents a numpy array, dtype is element type
+                      of this numpy array. Otherwise, dtype is type of the object.
+        :param shape: If current entry represents a numpy array, shape is the shape of
+                      this numpy array. Otherwise, shape is None.
+        :param is_numpy: Whether this entry represent a numpy array.
+        :param mapped_block_idx: Index of the block in which current entry is stored.
         """
         self.dtype = dtype
         self.shape = shape
@@ -88,9 +96,9 @@ class ConnectionDescriptor:
 
 def get_local_free_port(num, low, high):
     """
-    Get $num free ports between $low and $high if possible.
+    Get num free ports between low and high if possible.
 
-    :exception: object_store_exceptions.SMOSPortBusy will be raised if not enough free ports are available
+    :exception object_store_exceptions.SMOSPortBusy:  If not enough free ports are available
 
     :param num: number of free ports required
     :param low: lower bound of port idx
@@ -112,6 +120,10 @@ def get_local_free_port(num, low, high):
 def log2terminal(info_type, msg, worker_type=""):
     """
     log message to terminal in uniform format
+
+    :param info_type: Usually Error / Warning / Info
+    :param msg: message body
+    :param worker_type: (optional) Identifies who send this message.
     """
     print(f"[(pid={os.getpid()}){worker_type}] {info_type}: {msg}")
 
@@ -121,17 +133,17 @@ def serialize_numpy_list(numpy_list):
     Serialize a list of numpy arrays for multiple tracks. This is the recommended
     way of putting a list of numpy arrays into shared memory object store.
 
-    :exception: object_store_exceptions.SMOSInputTypeError will be raised if input
-                is not a list of numpy arrays
+    :exception object_store_exceptions.SMOSInputTypeError:  If input is not a list of
+                                                            numpy arrays
 
     :param numpy_list: a list of numpy to be serialized
-    :return: entry_config_list
+    :return: entry_config_list, numpy_list
     """
     # check if input is a list of numpy arrays
     if not type(numpy_list) == list:
         raise object_store_exceptions.SMOSInputTypeError(f"Input not list.")
     if len(numpy_list) == 0:
-        return []
+        return [], []
     if not type(numpy_list[0]) == np.ndarray:
         raise object_store_exceptions.SMOSInputTypeError(f"Expected numpy list, got list of"
                                                          f" {type(numpy_list[0])}.")
@@ -141,7 +153,7 @@ def serialize_numpy_list(numpy_list):
     for np_array in numpy_list:
         entry_config = EntryConfig(dtype=np_array.dtype, shape=np_array.shape, is_numpy=True)
         entry_config_list.append(entry_config)
-    return entry_config_list
+    return entry_config_list, numpy_list
 
 
 def serialize_numpy(numpy_array):
@@ -149,11 +161,10 @@ def serialize_numpy(numpy_array):
     Serialize a numpy array for one track. This is the recommended way of putting a
      numpy array into shared memory object store.
 
-    :exception: object_store_exceptions.SMOSInputTypeError will be raised if input
-                is not a numpy array
+    :exception object_store_exceptions.SMOSInputTypeError: If input is not a numpy array
 
     :param numpy_array: numpy array to be serialized
-    :return: entry_config
+    :return: entry_config, numpy_array
     """
     # check if input is a numpy array
     if not type(numpy_array) == np.ndarray:
@@ -161,21 +172,34 @@ def serialize_numpy(numpy_array):
 
     # construct entry config for each array
     entry_config = EntryConfig(dtype=numpy_array.dtype, shape=numpy_array.shape, is_numpy=True)
-    return entry_config
+    return entry_config, numpy_array
 
 
-def serialize(object):
+def serialize(obj):
     """
     This is a general serializer based on pickle. Note that (list of) numpy arrays
-    should use serialize_numpy_list instead for better performance.
+    should use serialize_numpy(_list) instead for better performance.
 
-    :return:
+
+    :param obj:
+    :return: entry_config, data_stream
+    """
+    entry_config = EntryConfig(dtype=type(obj), shape=None, is_numpy=False)
+    data_stream = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+    return entry_config, data_stream
+
+
+def serialize_list(obj_list):
+    """
+    This is a general serializer based on pickle. Note that (list of) numpy arrays
+    should use serialize_numpy(_list) instead for better performance.
+
+    :return: entry_config, data_stream
     """
 
-
-def deserialize(buffer):
+def deserialize(data_stream):
     """
-    This is a general deserializer for objects
+    This is a general deserializer based on pickle. Note that this can only
 
     :param buffer:
     :return:
