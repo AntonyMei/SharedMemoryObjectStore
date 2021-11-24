@@ -7,6 +7,8 @@ import os
 import multiprocessing
 import socket
 
+import numpy as np
+
 import object_store_exceptions
 
 
@@ -116,12 +118,29 @@ def log2terminal(info_type, msg, worker_type=""):
 
 def serialize_numpy_list(numpy_list):
     """
-    Serialize a list of numpy arrays into multiple tracks.
+    Serialize a list of numpy arrays into multiple tracks. This is the recommended
+    way of putting lists of numpy arrays into shared memory object store.
 
-    :param numpy_list:
-    :return:
+    :exception: object_store_exceptions.SMOSInputFormatError will be raised if input
+                is not a list of numpy arrays
+
+    :param numpy_list: a list of numpy to be serialized
+    :return: entry_header_list, numpy_list
     """
-    # TODO
-    # check if its a list of numpy arrays
-    # construct entry header for arrays
-    pass
+    # check if input is a list of numpy arrays
+    if not type(numpy_list) == list:
+        raise object_store_exceptions.SMOSInputFormatError(f"Input not list")
+    if len(numpy_list) == 0:
+        return [], []
+    if not type(numpy_list[0]) == np.ndarray:
+        raise object_store_exceptions.SMOSInputFormatError(f"Expected numpy list, got list of"
+                                                           f" {type(numpy_list[0])}")
+
+    # construct entry config for each array
+    entry_config_list = []
+    for np_array in numpy_list:
+        entry_config = EntryConfig(dtype=np_array.dtype, shape=np_array.shape, is_numpy=True)
+        entry_config_list.append(entry_config)
+    return entry_config_list, numpy_list
+
+

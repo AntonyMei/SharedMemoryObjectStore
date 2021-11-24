@@ -10,21 +10,6 @@ class SMOSPortBusy(Exception):
     """
     pass
 
-class BufferInternalError(Exception):
-    pass
 
-
-class BufferFullError(Exception):
-    pass
-
-
-class BufferDoubleReleaseError(Exception):
-    pass
-
-
-class ServerDropOutError(Exception):
-    pass
-
-
-class SharedMemoryDropOutError(Exception):
+class SMOSInputFormatError(Exception):
     pass

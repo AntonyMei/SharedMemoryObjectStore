@@ -9,10 +9,10 @@ import object_store_util
 
 def main():
     start = time.time()
-    a = np.random.randn(40 * 1000 * 1000)
-    # b = np.random.randn(40 * 1000 * 1000)
 
-    # c = a + b
+    a = [np.ones(3), np.ones(3)]
+    print(object_store_util.serialize_numpy_list(a))
+
     end = time.time()
     print(end - start)
 
