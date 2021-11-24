@@ -235,7 +235,7 @@ def deserialize_list(data_stream_list):
     :return: deserialized_object_list
     """
     # check if input is a list
-    if not type(obj_list) == list:
+    if not type(data_stream_list) == list:
         raise object_store_exceptions.SMOSInputTypeError("Input not list")
 
     # deserialize
