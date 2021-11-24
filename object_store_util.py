@@ -180,8 +180,7 @@ def serialize(obj):
     This is a general serializer based on pickle. Note that (list of) numpy arrays
     should use serialize_numpy(_list) instead for better performance.
 
-
-    :param obj:
+    :param obj: object to be serialized
     :return: entry_config, data_stream
     """
     entry_config = EntryConfig(dtype=type(obj), shape=None, is_numpy=False)
@@ -194,14 +193,53 @@ def serialize_list(obj_list):
     This is a general serializer based on pickle. Note that (list of) numpy arrays
     should use serialize_numpy(_list) instead for better performance.
 
-    :return: entry_config, data_stream
+    :exception object_store_exceptions.SMOSInputTypeError: If input is not a list.
+
+    :param obj_list: list of objects to be serialized
+    :return: entry_config_list, data_stream_list
     """
+    # check if input is a list
+    if not type(obj_list) == list:
+        raise object_store_exceptions.SMOSInputTypeError("Input not list")
+
+    # serialize
+    entry_config_list = []
+    data_stream_list = []
+    for obj in obj_list:
+        entry_config, data_stream = serialize(obj)
+        entry_config_list.append(entry_config)
+        data_stream_list.append(data_stream)
+    return entry_config_list, data_stream_list
+
 
 def deserialize(data_stream):
     """
-    This is a general deserializer based on pickle. Note that this can only
+    This is a general deserializer based on pickle. Note that data_stream must be
+    the result of previous calls to serialize.
 
-    :param buffer:
-    :return:
+    :param data_stream: data stream to be deserialized
+    :return: deserialized_object
     """
-    pass
+    deserialized_object = pickle.loads(data=data_stream)
+    return deserialized_object
+
+
+def deserialize_list(data_stream_list):
+    """
+    This is a general deserializer based on pickle. Note that data_stream_list must be
+    the result of previous calls to serialize_list.
+
+    :exception object_store_exceptions.SMOSInputTypeError: If input is not a list.
+
+    :param data_stream_list: list of data streams to be deserialized
+    :return: deserialized_object_list
+    """
+    # check if input is a list
+    if not type(obj_list) == list:
+        raise object_store_exceptions.SMOSInputTypeError("Input not list")
+
+    # deserialize
+    deserialized_object_list = []
+    for data_stream in data_stream_list:
+        deserialized_object_list.append(deserialize(data_stream))
+    return deserialized_object_list
