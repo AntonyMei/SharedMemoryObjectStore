@@ -26,7 +26,7 @@ class SMOSEntryUnallocated(Exception):
     pass
 
 
-class SMOSDoubleReleaseError(Exception):
+class SMOSReadRefDoubleRelease(Exception):
     """
     This exception is raised when read reference to an entry is released multiple
     times. Note that this exception may not be raised exactly when double release
@@ -36,10 +36,11 @@ class SMOSDoubleReleaseError(Exception):
     pass
 
 
-class SMOSBlockMismatch(Exception):
+class SMOSBlockDoubleRelease(Exception):
     """
     This exception is raised when the block to be freed is already in free block
     list when deleting an entry form a data track. This is probably caused by
-    erroneously mapping two entries to the same block.
+    erroneously mapping two entries to the same block or calling free_block_mapping
+    twice.
     """
     pass

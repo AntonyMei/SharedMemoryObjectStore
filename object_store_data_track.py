@@ -90,7 +90,7 @@ class DataTrack:
         """
         Release read reference on given entry.
 
-        :exception object_store_exceptions.SMOSDoubleReleaseError: if a read reference is
+        :exception object_store_exceptions.SMOSReadRefDoubleRelease: if a read reference is
                    released multiple times.
 
         :param idx: index of entry to be released
@@ -99,8 +99,8 @@ class DataTrack:
         try:
             self.entry_config_list[idx].pending_readers -= 1
             if self.entry_config_list[idx].pending_readers < 0:
-                raise object_store_exceptions.SMOSDoubleReleaseError(f"Double release on track {self.track_name}"
-                                                                     f"index {idx}")
+                raise object_store_exceptions.SMOSReadRefDoubleRelease(f"Double release on track {self.track_name}"
+                                                                       f"index {idx}")
             return 0
         except IndexError:
             return -1
@@ -108,8 +108,11 @@ class DataTrack:
     # delete
     def delete_entry_config(self, idx, force_delete=False):
         """
-        Delete an entry from current data track. Note that this is lazy delete,
-        the actual data in shared memory is not erased.
+        Delete an entry from current data track. Note that this is lazy delete, the actual
+        data in shared memory is not erased.
+
+        :exception object_store_exceptions.SMOSBlockDoubleRelease: if block to which the deleted
+        entry is mapped has already been freed.
 
         :param idx: index of entry to be deleted
         :param force_delete: whether to delete the entry when there are still pending readers
@@ -125,8 +128,8 @@ class DataTrack:
             entry_config = self.entry_config_list.pop(idx)
             block_idx = entry_config.mapped_block_idx
             if block_idx in self.free_block_list.queue:
-                raise object_store_exceptions.SMOSBlockMismatch(f"Block {block_idx} has already been"
-                                                                f"freed in data track {self.track_name}.")
+                raise object_store_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
+                                                                     f"freed in data track {self.track_name}.")
             else:
                 self.free_block_list.put(block_idx)
                 return 0
@@ -134,3 +137,45 @@ class DataTrack:
         except IndexError:
             return -1
 
+    # pop and free
+    def pop_entry_config(self, force_pop=False):
+        """
+        Pop an entry from current data track. Note that block to which the entry is mapped
+        will not be freed in this function (since data in the entry will be used after pop).
+        Call free_block_mapping to free the block when data in the entry is no longer useful.
+
+
+        :param force_pop: whether to pop the entry when there are still pending readers
+        :return: [0, entry_config] if successful, [-1, None] if data track empty, [1, None]
+                 if permission denied
+        """
+        try:
+            # check permission
+            pop_permission = (self.entry_config_list[0].pending_readers == 0)
+            if not pop_permission and not force_pop:
+                return 1, None
+
+            # pop entry config
+            entry_config = self.entry_config_list.pop(0)
+            return 0, entry_config
+
+        except IndexError:
+            return -1, None
+
+    def free_block_mapping(self, entry_config: util.EntryConfig):
+        """
+        Free a block associated with a previously popped entry.
+
+        :exception object_store_exceptions.SMOSBlockDoubleRelease: if the block associated with
+                   input entry_config has already been freed
+
+        :param entry_config: a previously popped entry
+        :return: always 0
+        """
+        block_idx = entry_config.mapped_block_idx
+        if block_idx in self.free_block_list.queue:
+            raise object_store_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
+                                                                 f"freed in data track {self.track_name}.")
+        else:
+            self.free_block_list.put(block_idx)
+            return 0
