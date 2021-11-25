@@ -44,3 +44,11 @@ class SMOSBlockDoubleRelease(Exception):
     twice.
     """
     pass
+
+
+class SMOSTrackMismatch(Exception):
+    """
+    This exception is raised when track_name of current track is different from input
+    entry_config's track_name.
+    """
+    pass

@@ -50,6 +50,7 @@ class DataTrack:
         try:
             block_idx = self.free_block_list.get(block=False)
             entry_config.mapped_block_idx = block_idx
+            entry_config.track_name = self.track_name
             return 0, entry_config
         except queue.Empty:
             return -1, entry_config
@@ -59,13 +60,19 @@ class DataTrack:
         Append configuration of new entry to this data track's configuration list
 
         :exception object_store_exceptions.SMOSEntryUnallocated: if entry_config is mapped to -1 block
+        :exception object_store_exceptions.SMOSTrackMismatch: if track_name of current track is different
+                   from track name of input entry_config
 
         :param entry_config: configuration of new entry
         :return: always 0
         """
-        # check if entry has been allocated
+        # check if entry_config has been correctly allocated
         if entry_config.mapped_block_idx == -1:
             raise object_store_exceptions.SMOSEntryUnallocated(f"Entry unallocated.")
+        if not entry_config.track_name == self.track_name:
+            raise object_store_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
+                                                            f"input entry_config is associated with track"
+                                                            f" {entry_config.track_name}.")
 
         # append entry config
         self.entry_config_list.append(entry_config)
@@ -172,6 +179,13 @@ class DataTrack:
         :param entry_config: a previously popped entry
         :return: always 0
         """
+        # check if input entry_config is associated with current track
+        if not entry_config.track_name == self.track_name:
+            raise object_store_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
+                                                            f"input entry_config is associated with track"
+                                                            f" {entry_config.track_name}.")
+
+        # free block mapping
         block_idx = entry_config.mapped_block_idx
         if block_idx in self.free_block_list.queue:
             raise object_store_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"

@@ -15,7 +15,7 @@ import object_store_exceptions
 
 class EntryConfig:
 
-    def __init__(self, dtype, shape, is_numpy=True, mapped_block_idx=-1):
+    def __init__(self, dtype, shape, is_numpy, track_name=None, mapped_block_idx=-1):
         """
         Each entry config represents configuration of an entry in one track
 
@@ -24,11 +24,16 @@ class EntryConfig:
         :param shape: If current entry represents a numpy array, shape is the shape of
                       this numpy array. Otherwise, shape is None.
         :param is_numpy: Whether this entry represent a numpy array.
+        :param track_name: name of the track associated with this entry
         :param mapped_block_idx: Index of the block in which current entry is stored.
         """
+        # data configuration
         self.dtype = dtype
         self.shape = shape
         self.is_numpy = is_numpy
+
+        # management
+        self.track_name = track_name
         self.mapped_block_idx = mapped_block_idx
         self.pending_readers = 0
 
@@ -114,7 +119,7 @@ def get_local_free_port(num, low, high):
             port_list.append(port)
         if len(port_list) == num:
             return port_list
-    raise object_store_exceptions.SMOSPortBusy(f"Out of free ports (required {num}, available {len(port_list)})")
+    raise object_store_exceptions.SMOSPortBusy(f"Out of free ports (required {num}, available {len(port_list)}).")
 
 
 def log2terminal(info_type, msg, worker_type=""):
