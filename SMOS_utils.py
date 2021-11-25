@@ -151,7 +151,7 @@ def serialize_numpy_list(numpy_list):
         return [], []
     if not type(numpy_list[0]) == np.ndarray:
         raise SMOS_exceptions.SMOSInputTypeError(f"Expected numpy list, got list of"
-                                                         f" {type(numpy_list[0])}.")
+                                                 f" {type(numpy_list[0])}.")
 
     # construct entry config for each array
     entry_config_list = []
