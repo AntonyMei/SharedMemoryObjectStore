@@ -214,7 +214,7 @@ class DataTrack:
         self.shm.unlink()
         return SMOS_SUCCESS
 
-    # track status and parameters
+    # utility functions for DataTrack
     def get_entry_count(self):
         """
         Get the number of entries in current track.
