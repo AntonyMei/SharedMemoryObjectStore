@@ -88,7 +88,7 @@ class DataTrack:
 
     def release_read_reference(self, idx):
         """
-        Release read on given entry.
+        Release read reference on given entry.
 
         :exception object_store_exceptions.SMOSDoubleReleaseError: if a read reference is
                    released multiple times.
