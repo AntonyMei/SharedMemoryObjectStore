@@ -104,3 +104,33 @@ class DataTrack:
             return 0
         except IndexError:
             return -1
+
+    # delete
+    def delete_entry_config(self, idx, force_delete=False):
+        """
+        Delete an entry from current data track. Note that this is lazy delete,
+        the actual data in shared memory is not erased.
+
+        :param idx: index of entry to be deleted
+        :param force_delete: whether to delete the entry when there are still pending readers
+        :return: 0 if successful, -1 if index out of range, 1 if permission denied
+        """
+        try:
+            # check delete permission
+            delete_permission = (self.entry_config_list[idx].pending_readers == 0)
+            if not delete_permission and not force_delete:
+                return 1
+
+            # delete entry config and free
+            entry_config = self.entry_config_list.pop(idx)
+            block_idx = entry_config.mapped_block_idx
+            if block_idx in self.free_block_list.queue:
+                raise object_store_exceptions.SMOSBlockMismatch(f"Block {block_idx} has already been"
+                                                                f"freed in data track {self.track_name}.")
+            else:
+                self.free_block_list.put(block_idx)
+                return 0
+
+        except IndexError:
+            return -1
+

@@ -34,3 +34,12 @@ class SMOSDoubleReleaseError(Exception):
     later releases.
     """
     pass
+
+
+class SMOSBlockMismatch(Exception):
+    """
+    This exception is raised when the block to be freed is already in free block
+    list when deleting an entry form a data track. This is probably caused by
+    erroneously mapping two entries to the same block.
+    """
+    pass
