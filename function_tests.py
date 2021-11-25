@@ -25,8 +25,9 @@ def main():
     # res = object_store_util.deserialize(stream_list)
     # print(res)
     a = dt.DataTrack("abc", "abc", 1024, 10)
-    b = object_store_util.EntryConfig(1, 1)
+    b = object_store_util.EntryConfig(1, 1, True)
     a.allocate_block(b)
+    a.stop()
     print(b.mapped_block_idx)
 
     end = time.time()

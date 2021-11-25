@@ -200,3 +200,14 @@ class DataTrack:
         else:
             self.free_block_list.put(block_idx)
             return SMOS_SUCCESS
+
+    # stop track for clean up
+    def stop(self):
+        """
+        Unlinks current track's shared memory. This function is supposed to
+        be called when (and only when) cleaning up for exit.
+
+        :return: always SMOS_SUCCESS
+        """
+        self.shm.unlink()
+        return SMOS_SUCCESS
