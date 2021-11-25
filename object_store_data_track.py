@@ -39,6 +39,7 @@ class DataTrack:
         for i in range(max_capacity):
             self.free_block_list.put(i)
 
+    # write
     def allocate_block(self, entry_config: util.EntryConfig):
         """
         Allocate a free block for a new entry and write into entry config
@@ -69,3 +70,37 @@ class DataTrack:
         # append entry config
         self.entry_config_list.append(entry_config)
         return 0
+
+    # read
+    def read_entry_config(self, idx):
+        """
+        Return entry config at given index and add read reference to that entry.
+
+        :param idx: index of entry config to be returned
+        :return: [0, entry_config] if successful, [-1, None] if index out of range
+        """
+        try:
+            self.entry_config_list[idx].pending_readers += 1
+            entry_config = self.entry_config_list[idx]
+            return 0, entry_config
+        except IndexError:
+            return -1, None
+
+    def release_read_reference(self, idx):
+        """
+        Release read on given entry.
+
+        :exception object_store_exceptions.SMOSDoubleReleaseError: if a read reference is
+                   released multiple times.
+
+        :param idx: index of entry to be released
+        :return: 0 if successful, -1 if index out of range
+        """
+        try:
+            self.entry_config_list[idx].pending_readers -= 1
+            if self.entry_config_list[idx].pending_readers < 0:
+                raise object_store_exceptions.SMOSDoubleReleaseError(f"Double release on track {self.track_name}"
+                                                                     f"index {idx}")
+            return 0
+        except IndexError:
+            return -1

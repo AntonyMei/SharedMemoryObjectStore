@@ -24,3 +24,13 @@ class SMOSEntryUnallocated(Exception):
     into data tracks.
     """
     pass
+
+
+class SMOSDoubleReleaseError(Exception):
+    """
+    This exception is raised when read reference to an entry is released multiple
+    times. Note that this exception may not be raised exactly when double release
+    happens, but a double release is sure to cause this exception in itself or
+    later releases.
+    """
+    pass
