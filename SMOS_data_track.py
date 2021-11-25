@@ -6,9 +6,9 @@ This file contains definition of class DataTrack for Shared Memory Object Store
 import queue
 from multiprocessing import shared_memory
 
-import object_store_exceptions
-import object_store_util as util
-from object_store_constants import SMOS_FAIL, SMOS_SUCCESS, SMOS_PERMISSION_DENIED
+import SMOS_exceptions
+import SMOS_utils as util
+from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS, SMOS_PERMISSION_DENIED
 
 
 class DataTrack:
@@ -70,9 +70,9 @@ class DataTrack:
         """
         # check if entry_config has been correctly allocated
         if entry_config.mapped_block_idx == -1:
-            raise object_store_exceptions.SMOSEntryUnallocated(f"Entry unallocated.")
+            raise SMOS_exceptions.SMOSEntryUnallocated(f"Entry unallocated.")
         if not entry_config.track_name == self.track_name:
-            raise object_store_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
+            raise SMOS_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
                                                             f"input entry_config is associated with track"
                                                             f" {entry_config.track_name}.")
 
@@ -110,7 +110,7 @@ class DataTrack:
         try:
             self.entry_config_list[idx].pending_readers -= 1
             if self.entry_config_list[idx].pending_readers < 0:
-                raise object_store_exceptions.SMOSReadRefDoubleRelease(f"Double release on track {self.track_name}"
+                raise SMOS_exceptions.SMOSReadRefDoubleRelease(f"Double release on track {self.track_name}"
                                                                        f"index {idx}")
             return SMOS_SUCCESS
         except IndexError:
@@ -141,7 +141,7 @@ class DataTrack:
             entry_config = self.entry_config_list.pop(idx)
             block_idx = entry_config.mapped_block_idx
             if block_idx in self.free_block_list.queue:
-                raise object_store_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
+                raise SMOS_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
                                                                      f"freed in data track {self.track_name}.")
             else:
                 self.free_block_list.put(block_idx)
@@ -190,14 +190,14 @@ class DataTrack:
         """
         # check if input entry_config is associated with current track
         if not entry_config.track_name == self.track_name:
-            raise object_store_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
+            raise SMOS_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
                                                             f"input entry_config is associated with track"
                                                             f" {entry_config.track_name}.")
 
         # free block mapping
         block_idx = entry_config.mapped_block_idx
         if block_idx in self.free_block_list.queue:
-            raise object_store_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
+            raise SMOS_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
                                                                  f"freed in data track {self.track_name}.")
         else:
             self.free_block_list.put(block_idx)
@@ -236,7 +236,7 @@ class DataTrack:
         """
         # check if entry config is associated with current track
         if not entry_config.track_name == self.track_name:
-            raise object_store_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
+            raise SMOS_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
                                                             f"input entry_config is associated with track"
                                                             f" {entry_config.track_name}.")
 

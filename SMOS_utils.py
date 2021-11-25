@@ -10,7 +10,7 @@ import socket
 
 import numpy as np
 
-import object_store_exceptions
+import SMOS_exceptions
 
 
 class EntryConfig:
@@ -119,7 +119,7 @@ def get_local_free_port(num, low, high):
             port_list.append(port)
         if len(port_list) == num:
             return port_list
-    raise object_store_exceptions.SMOSPortBusy(f"Out of free ports (required {num}, available {len(port_list)}).")
+    raise SMOS_exceptions.SMOSPortBusy(f"Out of free ports (required {num}, available {len(port_list)}).")
 
 
 def log2terminal(info_type, msg, worker_type=""):
@@ -146,11 +146,11 @@ def serialize_numpy_list(numpy_list):
     """
     # check if input is a list of numpy arrays
     if not type(numpy_list) == list:
-        raise object_store_exceptions.SMOSInputTypeError(f"Input not list.")
+        raise SMOS_exceptions.SMOSInputTypeError(f"Input not list.")
     if len(numpy_list) == 0:
         return [], []
     if not type(numpy_list[0]) == np.ndarray:
-        raise object_store_exceptions.SMOSInputTypeError(f"Expected numpy list, got list of"
+        raise SMOS_exceptions.SMOSInputTypeError(f"Expected numpy list, got list of"
                                                          f" {type(numpy_list[0])}.")
 
     # construct entry config for each array
@@ -173,7 +173,7 @@ def serialize_numpy(numpy_array):
     """
     # check if input is a numpy array
     if not type(numpy_array) == np.ndarray:
-        raise object_store_exceptions.SMOSInputTypeError(f"Input not numpy array.")
+        raise SMOS_exceptions.SMOSInputTypeError(f"Input not numpy array.")
 
     # construct entry config for each array
     entry_config = EntryConfig(dtype=numpy_array.dtype, shape=numpy_array.shape, is_numpy=True)
@@ -205,7 +205,7 @@ def serialize_list(obj_list):
     """
     # check if input is a list
     if not type(obj_list) == list:
-        raise object_store_exceptions.SMOSInputTypeError("Input not list")
+        raise SMOS_exceptions.SMOSInputTypeError("Input not list")
 
     # serialize
     entry_config_list = []
@@ -241,7 +241,7 @@ def deserialize_list(data_stream_list):
     """
     # check if input is a list
     if not type(data_stream_list) == list:
-        raise object_store_exceptions.SMOSInputTypeError("Input not list")
+        raise SMOS_exceptions.SMOSInputTypeError("Input not list")
 
     # deserialize
     deserialized_object_list = []

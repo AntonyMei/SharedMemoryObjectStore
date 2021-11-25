@@ -4,8 +4,8 @@ This file contains function tests for Shared Memory Object Store
 """
 import time
 import numpy as np
-import object_store_util
-import object_store_data_track as dt
+import SMOS_utils
+import SMOS_data_track as dt
 
 
 def main():
@@ -25,7 +25,7 @@ def main():
     # res = object_store_util.deserialize(stream_list)
     # print(res)
     a = dt.DataTrack("abc", "abc", 1024, 10)
-    b = object_store_util.EntryConfig(1, 1, True)
+    b = SMOS_utils.EntryConfig(1, 1, True)
     a.allocate_block(b)
     a.stop()
     print(b.mapped_block_idx)
