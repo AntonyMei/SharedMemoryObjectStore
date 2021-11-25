@@ -182,6 +182,8 @@ class DataTrack:
 
         :exception object_store_exceptions.SMOSBlockDoubleRelease: if the block associated with
                    input entry_config has already been freed
+        :exception object_store_exceptions.SMOSTrackMismatch: if track_name of current track is different
+                   from track name of input entry_config
 
         :param entry_config: a previously popped entry
         :return: always SMOS_SUCCESS
@@ -211,3 +213,35 @@ class DataTrack:
         """
         self.shm.unlink()
         return SMOS_SUCCESS
+
+    # track status and parameters
+    def get_entry_count(self):
+        """
+        Get the number of entries in current track.
+
+        :return: entry count
+        """
+        return len(self.entry_config_list)
+
+    def get_entry_offset(self, entry_config: util.EntryConfig):
+        """
+        Get offset of given entry in shared memory space.
+
+        :exception object_store_exceptions.SMOSTrackMismatch: if track_name of current track is different
+                   from track name of input entry_config
+
+        :param entry_config: entry to be queried
+        :return: [SMOS_SUCCESS, offset] if successful,
+                 [SMOS_FAIL, None] if block index out of range
+        """
+        # check if entry config is associated with current track
+        if not entry_config.track_name == self.track_name:
+            raise object_store_exceptions.SMOSTrackMismatch(f"Current track is {self.track_name}, while "
+                                                            f"input entry_config is associated with track"
+                                                            f" {entry_config.track_name}.")
+
+        # calculate result
+        if entry_config.mapped_block_idx >= self.max_capacity:
+            return SMOS_FAIL, None
+        else:
+            return SMOS_SUCCESS, entry_config.mapped_block_idx * self.block_size
