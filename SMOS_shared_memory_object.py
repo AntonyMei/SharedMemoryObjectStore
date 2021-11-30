@@ -114,3 +114,35 @@ class SharedMemoryObject:
 
         # return
         return SMOS_SUCCESS
+
+    # read
+    def read_entry_config(self, idx):
+        """
+        Read entry config at given index and add read reference to that entry.
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks return
+                   index out of range while others do not
+
+        :param idx: index of entry to be read
+        :return: [SMOS_SUCCESS, entry_config_list] if successful,
+                 [SMOS_FAIL, None] if index out of range
+        """
+        # read entry config
+        status_list = []
+        entry_config_list = []
+        self.lock.reader_enter()
+        for track in self.track_list:
+            status, entry_config = track.read_entry_config(idx)
+            status_list.append(status)
+            entry_config_list.append(entry_config)
+        self.lock.reader_leave()
+
+        # check data integrity
+        if not len(set(status_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+
+        # return
+        if status_list[0] == SMOS_SUCCESS:
+            return SMOS_SUCCESS, entry_config_list
+        else:
+            return SMOS_FAIL, None

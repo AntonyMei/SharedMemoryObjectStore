@@ -82,9 +82,9 @@ class DataTrack:
     # read
     def read_entry_config(self, idx):
         """
-        Return entry config at given index and add read reference to that entry.
+        Read entry config at given index and add read reference to that entry.
 
-        :param idx: index of entry config to be returned
+        :param idx: index of entry to be read
         :return: [SMOS_SUCCESS, entry_config] if successful,
                  [SMOS_FAIL, None] if index out of range
         """
