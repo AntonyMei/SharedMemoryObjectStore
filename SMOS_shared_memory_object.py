@@ -76,7 +76,7 @@ class SharedMemoryObject:
         """
         # check input shape
         if not len(entry_config_list) == self.track_count:
-            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but only"
+            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {self.track_count} tracks, but only"
                                                         f"{len(entry_config_list)} items in input.")
 
         # allocate block
@@ -89,3 +89,28 @@ class SharedMemoryObject:
         if not len(set(status_list)) == 1:
             raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
         return status_list[0]
+
+    def append_entry_config(self, entry_config_list: [utils.EntryConfig]):
+        """
+        Append configurations of new entry into SharedMemoryObject's tracks, one
+        configuration for each track.
+
+        :exception SMOS_exceptions.SMOSDimensionMismatch: if length of input is
+                   different of number of tracks
+
+        :param entry_config_list: configurations of new entry, one for each track
+        :return: always SMOS_SUCCESS
+        """
+        # check input shape
+        if not len(entry_config_list) == self.track_count:
+            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {self.track_count} tracks, but only"
+                                                        f"{len(entry_config_list)} items in input.")
+
+        # append entry config
+        self.lock.writer_enter()
+        for track_idx in range(self.track_count):
+            self.track_list[track_idx].append_entry_config(entry_config_list[track_idx])
+        self.lock.writer_leave()
+
+        # return
+        return SMOS_SUCCESS
