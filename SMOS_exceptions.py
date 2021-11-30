@@ -52,3 +52,11 @@ class SMOSTrackMismatch(Exception):
     entry_config's track_name.
     """
     pass
+
+
+class SMOSDimensionMismatch(Exception):
+    """
+    This exception is raised when multiple items that are supposed to have the same
+    shape turn out to be different.
+    """
+    pass

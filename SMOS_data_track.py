@@ -24,7 +24,6 @@ class DataTrack:
         :param block_size: size of each block
         :param max_capacity: maximum number of objects that can be stored in this track
         """
-
         # parameters
         self.track_name = track_name
         self.shm_name = shm_name
