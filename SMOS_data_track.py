@@ -8,7 +8,7 @@ from multiprocessing import shared_memory
 
 import SMOS_exceptions
 import SMOS_utils as utils
-from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS, SMOS_PERMISSION_DENIED
+from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS, SMOS_PERMISSION_DENIED, SMOS_MAX
 
 
 class DataTrack:
@@ -245,3 +245,24 @@ class DataTrack:
             return SMOS_FAIL, None
         else:
             return SMOS_SUCCESS, entry_config.mapped_block_idx * self.block_size
+
+
+def get_data_track(track_name, shm_name, block_size, max_capacity):
+    """
+    Returns a data track. This function adds a random tail to shared memory name so that
+    there two objects with same name can exist simultaneously in SMOS.
+
+    :param track_name: name of new track
+    :param shm_name: name of shared memory space used in new track
+    :param block_size: size of each block in new track
+    :param max_capacity: max capacity of new track
+    :return: a new DataTrack object
+    """
+
+    while True:
+        try:
+            track = DataTrack(track_name=track_name, shm_name=f"{shm_name}:{random.randint(0, SMOS_MAX)}",
+                              block_size=block_size, max_capacity=max_capacity)
+            return track
+        except FileExistsError:
+            pass
