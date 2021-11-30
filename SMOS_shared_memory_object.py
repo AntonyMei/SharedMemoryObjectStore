@@ -146,3 +146,27 @@ class SharedMemoryObject:
             return SMOS_SUCCESS, entry_config_list
         else:
             return SMOS_FAIL, None
+
+    def release_read_reference(self, idx):
+        """
+        Release read reference on given entry
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks return
+                   index out of range while others do not
+
+        :param idx: index of entry to be released
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if index out of range
+        """
+        # release read reference
+        status_list = []
+        self.lock.reader_enter()
+        for track in self.track_list:
+            status = track.release_read_reference(idx)
+            status_list.append(status)
+        self.lock.reader_leave()
+
+        # check integrity and return
+        if not len(set(status_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+        return status_list[0]
