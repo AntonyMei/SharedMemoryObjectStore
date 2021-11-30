@@ -233,3 +233,20 @@ class SharedMemoryObject:
             return SMOS_SUCCESS, entry_config_list
         else:
             return status_list[0], None
+
+    def free_block_mapping(self, entry_config_list: [utils.EntryConfig]):
+        """
+        Free blocks associated with a previously popped entry.
+
+        :param entry_config_list: configurations of entry to be freed
+        :return: always SMOS_SUCCESS
+        """
+        # check input shape
+        if not len(entry_config_list) == self.track_count:
+            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {self.track_count} tracks, but only"
+                                                        f"{len(entry_config_list)} items in input.")
+
+        # free block mapping and return
+        for track_idx in range(self.track_count):
+            self.track_list[track_idx].free_block_mapping(entry_config=entry_config_list[track_idx])
+        return SMOS_SUCCESS
