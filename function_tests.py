@@ -25,7 +25,6 @@ def main():
     # res = object_store_util.deserialize(stream_list)
     # print(res)
     a = dt.DataTrack("abc", "abc", 1024, 10)
-    b = dt.DataTrack("abc", "abc", 1024, 10)
     b = SMOS_utils.EntryConfig(1, 1, True)
     a.allocate_block(b)
     a.stop()

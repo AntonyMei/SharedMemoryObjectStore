@@ -42,19 +42,19 @@ class DataTrack:
     # write
     def allocate_block(self, entry_config: utils.EntryConfig):
         """
-        Allocate a free block for a new entry and write into entry config
+        Allocate a free block for a new entry and write into entry config.
 
         :param entry_config: configuration of new entry
-        :return: [SMOS_SUCCESS, entry_config] if successful,
-                 [SMOS_FAIL, entry_config] if no free block available
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if no free block available
         """
         try:
             block_idx = self.free_block_list.get(block=False)
             entry_config.mapped_block_idx = block_idx
             entry_config.track_name = self.track_name
-            return SMOS_SUCCESS, entry_config
+            return SMOS_SUCCESS
         except queue.Empty:
-            return SMOS_FAIL, entry_config
+            return SMOS_FAIL
 
     def append_entry_config(self, entry_config: utils.EntryConfig):
         """

@@ -60,3 +60,11 @@ class SMOSDimensionMismatch(Exception):
     shape turn out to be different.
     """
     pass
+
+
+class SMOSTrackUnaligned(Exception):
+    """
+    This exception is raised when multiple tracks in the same SharedMemoryObject are
+    unaligned, i.e. they have different remaining block count.
+    """
+    pass

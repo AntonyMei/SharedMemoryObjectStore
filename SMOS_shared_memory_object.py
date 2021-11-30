@@ -37,7 +37,7 @@ class SharedMemoryObject:
         # save block sizes
         if not len(block_size_list) == track_count:
             raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but only"
-                                                        f"{len(block_size_list)} items in block size list")
+                                                        f"{len(block_size_list)} items in block size list.")
         self.block_size_list = block_size_list
 
         # save track names
@@ -59,3 +59,33 @@ class SharedMemoryObject:
 
         # prepare lock
         self.lock = utils.RWLock()
+
+    # write
+    def allocate_block(self, entry_config_list: [utils.EntryConfig]):
+        """
+        Allocate a free block for a new entry and write into entry config.
+
+        :exception SMOS_exceptions.SMOSDimensionMismatch: if length of input is
+                   different of number of tracks
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks are able to
+                   allocate a new block while others are not
+
+        :param entry_config_list: configurations of new entry, one for each track
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if no free block available
+        """
+        # check input shape
+        if not len(entry_config_list) == self.track_count:
+            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but only"
+                                                        f"{len(entry_config_list)} items in input.")
+
+        # allocate block
+        status_list = []
+        for track_idx in range(self.track_count):
+            status = self.track_list[track_idx].allocate_block(entry_config_list[track_idx])
+            status_list.append(status)
+
+        # return
+        if not len(set(status_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+        return status_list[0]
