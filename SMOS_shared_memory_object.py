@@ -273,3 +273,27 @@ class SharedMemoryObject:
         :return: list of shared memory names
         """
         return self.shm_name_list
+
+    def get_entry_offset(self, entry_config_list: [utils.EntryConfig]):
+        """
+        Get offset of each track for given entry in shared memory space.
+
+        :exception SMOS_exceptions.SMOSDimensionMismatch: if length of input is
+                   different of number of tracks
+
+        :param entry_config_list: configurations of entry to be queried
+        :return: always [SMOS_SUCCESS, offset_list]
+        """
+        # check input shape
+        if not len(entry_config_list) == self.track_count:
+            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {self.track_count} tracks, but only"
+                                                        f"{len(entry_config_list)} items in input.")
+
+        # get entry offset
+        offset_list = []
+        for track_idx in range(self.track_count):
+            _, offset = self.track_list[track_idx].get_entry_offset(entry_config=entry_config_list[track_idx])
+            offset_list.append(offset)
+
+        # return
+        return SMOS_SUCCESS, offset_list

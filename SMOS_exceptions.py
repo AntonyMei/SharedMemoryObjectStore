@@ -56,7 +56,7 @@ class SMOSTrackMismatch(Exception):
 
 class SMOSDimensionMismatch(Exception):
     """
-    This exception is raised when multiple items that are supposed to have the same
+    This exception is raised when multiple objects that are supposed to have the same
     shape turn out to be different.
     """
     pass
@@ -66,5 +66,13 @@ class SMOSTrackUnaligned(Exception):
     """
     This exception is raised when multiple tracks in the same SharedMemoryObject are
     unaligned, i.e. they have different remaining block count.
+    """
+    pass
+
+
+class SMOSMappingError(Exception):
+    """
+    This exception is raised when SMOS finds that an entry is mapped to a out-of-range
+    block in some DataTrack.
     """
     pass

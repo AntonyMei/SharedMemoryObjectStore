@@ -227,10 +227,11 @@ class DataTrack:
 
         :exception object_store_exceptions.SMOSTrackMismatch: if track_name of current track is different
                    from track name of input entry_config
+        :exception SMOS_exceptions.SMOSMappingError: if mapped_block_idx in query is not smaller than
+                   max_capacity
 
         :param entry_config: entry to be queried
-        :return: [SMOS_SUCCESS, offset] if successful,
-                 [SMOS_FAIL, None] if block index out of range
+        :return: always [SMOS_SUCCESS, offset]
         """
         # check if entry config is associated with current track
         if not entry_config.track_name == self.track_name:
@@ -240,7 +241,8 @@ class DataTrack:
 
         # calculate result
         if entry_config.mapped_block_idx >= self.max_capacity:
-            return SMOS_FAIL, None
+            raise SMOS_exceptions.SMOSMappingError(f"Entry mapped to {entry_config.mapped_block_idx},"
+                                                   f"which is out of range ([0, {self.max_capacity - 1}]).")
         else:
             return SMOS_SUCCESS, entry_config.mapped_block_idx * self.block_size
 
