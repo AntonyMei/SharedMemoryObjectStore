@@ -156,7 +156,6 @@ class DataTrack:
         will not be freed in this function (since data in the entry will be used after pop).
         Call free_block_mapping to free the block when data in the entry is no longer useful.
 
-
         :param force_pop: whether to pop the entry when there are still pending readers
         :return: [SMOS_SUCCESS, entry_config] if successful,
                  [SMOS_FAIL, None] if data track empty,

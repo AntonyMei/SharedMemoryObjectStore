@@ -177,8 +177,8 @@ class SharedMemoryObject:
         Delete entry at idx from current SharedMemoryObject. Note that this is lazy
         delete, the actual data in shared memory is not erased.
 
-        :exception: SMOS_exceptions.SMOSTrackUnaligned: if different tracks have different
-                    return value to delete operation
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if different tracks have different
+                   return value to delete operation
 
         :param idx: index of entry to be deleted
         :param force_delete: whether to delete the entry when there are still pending readers
@@ -198,3 +198,38 @@ class SharedMemoryObject:
         if not len(set(status_list)) == 1:
             raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
         return status_list[0]
+
+    # pop and free
+    def pop_entry_config(self, force_pop=False):
+        """
+        Pop an entry from SharedMemoryObject. Note that blocks to which the entry is mapped
+        will not be freed in this function (since data in the entry will be used after pop).
+        Call free_block_mapping to free the block when data in the entry is no longer useful.
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if different tracks have different
+                   return value to delete operation
+
+        :param force_pop: whether to pop the entry when there are still pending readers
+        :return: [SMOS_SUCCESS, entry_config_list] if successful,
+                 [SMOS_FAIL, None] if data track empty,
+                 [SMOS_PERMISSION_DENIED, None] if permission denied
+        """
+        # pop entry config
+        status_list = []
+        entry_config_list = []
+        self.lock.writer_enter()
+        for track in self.track_list:
+            status, entry_config = track.pop_entry_config(force_pop=force_pop)
+            status_list.append(status)
+            entry_config_list.append(entry_config)
+        self.lock.writer_leave()
+
+        # check integrity
+        if not len(set(status_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+
+        # return
+        if status_list[0] == SMOS_SUCCESS:
+            return SMOS_SUCCESS, entry_config_list
+        else:
+            return status_list[0], None
