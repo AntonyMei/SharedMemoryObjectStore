@@ -250,3 +250,26 @@ class SharedMemoryObject:
         for track_idx in range(self.track_count):
             self.track_list[track_idx].free_block_mapping(entry_config=entry_config_list[track_idx])
         return SMOS_SUCCESS
+
+    # stop SharedMemoryObject
+    def stop(self):
+        """
+        Stop SharedMemoryObject for safe exit.
+
+        :return: always SMOS_SUCCESS
+        """
+        # stop tracks in this object
+        for track in self.track_list:
+            track.stop()
+
+        # release lock
+        del self.lock
+
+    # utility functions for SharedMemoryObject
+    def get_shm_name_list(self):
+        """
+        Get name of shared memories used in this object.
+
+        :return: list of shared memory names
+        """
+        return self.shm_name_list
