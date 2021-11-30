@@ -170,3 +170,31 @@ class SharedMemoryObject:
         if not len(set(status_list)) == 1:
             raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
         return status_list[0]
+
+    # delete
+    def delete_entry_config(self, idx, force_delete=False):
+        """
+        Delete entry at idx from current SharedMemoryObject. Note that this is lazy
+        delete, the actual data in shared memory is not erased.
+
+        :exception: SMOS_exceptions.SMOSTrackUnaligned: if different tracks have different
+                    return value to delete operation
+
+        :param idx: index of entry to be deleted
+        :param force_delete: whether to delete the entry when there are still pending readers
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if index out of range,
+                 SMOS_PERMISSION_DENIED if permission denied
+        """
+        # delete entry config
+        status_list = []
+        self.lock.writer_enter()
+        for track in self.track_list:
+            status = track.delete_entry_config(idx=idx, force_delete=force_delete)
+            status_list.append(status)
+        self.lock.writer_leave()
+
+        # check integrity and return
+        if not len(set(status_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+        return status_list[0]
