@@ -297,3 +297,27 @@ class SharedMemoryObject:
 
         # return
         return SMOS_SUCCESS, offset_list
+
+    def get_entry_count(self):
+        """
+        Get number of entries in current SharedMemoryObject. Note that this
+        function also checks data integrity (i.e. whether all tracks are
+        properly aligned).
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if tracks have different
+                   number of entries in them
+
+        :return: entry count
+        """
+        # get entry count
+        entry_count_list = []
+        self.lock.reader_enter()
+        for track in self.track_list:
+            entry_count = track.get_entry_count()
+            entry_count_list.append(entry_count)
+        self.lock.reader_leave()
+
+        # check data integrity and return
+        if not len(set(entry_count_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+        return entry_count_list[0]
