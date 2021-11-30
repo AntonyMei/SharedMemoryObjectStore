@@ -82,7 +82,7 @@ class SharedMemoryObject:
         # allocate block
         status_list = []
         for track_idx in range(self.track_count):
-            status = self.track_list[track_idx].allocate_block(entry_config_list[track_idx])
+            status = self.track_list[track_idx].allocate_block(entry_config=entry_config_list[track_idx])
             status_list.append(status)
 
         # return
@@ -109,7 +109,7 @@ class SharedMemoryObject:
         # append entry config
         self.lock.writer_enter()
         for track_idx in range(self.track_count):
-            self.track_list[track_idx].append_entry_config(entry_config_list[track_idx])
+            self.track_list[track_idx].append_entry_config(entry_config=entry_config_list[track_idx])
         self.lock.writer_leave()
 
         # return
@@ -132,7 +132,7 @@ class SharedMemoryObject:
         entry_config_list = []
         self.lock.reader_enter()
         for track in self.track_list:
-            status, entry_config = track.read_entry_config(idx)
+            status, entry_config = track.read_entry_config(idx=idx)
             status_list.append(status)
             entry_config_list.append(entry_config)
         self.lock.reader_leave()
@@ -162,7 +162,7 @@ class SharedMemoryObject:
         status_list = []
         self.lock.reader_enter()
         for track in self.track_list:
-            status = track.release_read_reference(idx)
+            status = track.release_read_reference(idx=idx)
             status_list.append(status)
         self.lock.reader_leave()
 
