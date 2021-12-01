@@ -12,7 +12,7 @@ import multiprocessing as mp
 from multiprocessing import shared_memory
 
 def remote_test():
-    print(SMOS_server.test)
+    pass
 
 
 def main():
@@ -48,10 +48,14 @@ def main():
     # print(res)
     """"""""""""""""""""""""""""""""""""""""""""""""
 
-    SMOS_server.test = 123
-    p = mp.Process(target=remote_test)
-    p.start()
-    p.join()
+    server = SMOS_server.Server()
+    server.start()
+    address = server.address()
+    print(address.ip, address.port, address.authkey)
+    server.stop()
+    # p = mp.Process(target=remote_test)
+    # p.start()
+    # p.join()
 
     end = time.time()
     print(f"time:{end - start}")

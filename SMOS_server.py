@@ -25,7 +25,7 @@ class Server:
         else:
             port = utils.get_local_free_port(1, 5000, 5050)[0]
             self.connection = utils.ConnectionDescriptor(ip="localhost", port=port,
-                                                         authkey="antony")
+                                                         authkey=b"antony")
         self.server_process = None
         self.object_store = None
 
