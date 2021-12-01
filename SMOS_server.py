@@ -28,7 +28,7 @@ class Server:
         """
         Start server in another process.
 
-        :return: SMOS_SUCCESS
+        :return: always SMOS_SUCCESS
         """
         self.server_process = mp.Process(target=start_server, args=(self.connection, ))
         self.server_process.start()
@@ -36,8 +36,14 @@ class Server:
         return SMOS_SUCCESS
 
     def stop(self):
-        """TODO: need to stop process and SMOS"""
-        pass
+        """
+        Stops server for safe exit.
+
+        :return: always SMOS_SUCCESS
+        """
+        self.object_store.stop()
+        self.server_process.terminate()
+        return SMOS_SUCCESS
 
 
 class SMOSManager(BaseManager):
