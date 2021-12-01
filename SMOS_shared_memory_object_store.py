@@ -5,8 +5,8 @@ This file contains class SharedMemoryObjectStore, which is core of SMOS.
 
 import SMOS_exceptions
 import SMOS_utils as utils
+from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS
 from SMOS_shared_memory_object import SharedMemoryObject
-from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS, SMOS_PERMISSION_DENIED
 
 
 class SharedMemoryObjectStore:
@@ -310,4 +310,3 @@ class SharedMemoryObjectStore:
         for idx in range(len(name_list)):
             utils.log2terminal(info_type="Info", msg=f"{name_list[idx]}: {entry_count_list[idx]}"
                                                      f"/{capacity_list[idx]}")
-

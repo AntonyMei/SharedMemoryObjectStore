@@ -3,8 +3,8 @@
 This file contains utility functions for Shared Memory Object Store
 """
 
-import os
 import multiprocessing
+import os
 import pickle
 import socket
 

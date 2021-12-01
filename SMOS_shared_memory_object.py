@@ -5,8 +5,8 @@ This file contains class SharedMemoryObject, which is basic component of SMOS.
 
 import SMOS_exceptions
 import SMOS_utils as utils
+from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS
 from SMOS_data_track import get_data_track
-from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS, SMOS_PERMISSION_DENIED
 
 
 class SharedMemoryObject:
