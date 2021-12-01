@@ -133,6 +133,25 @@ def log2terminal(info_type, msg, worker_type=""):
     print(f"[(pid={os.getpid()}){worker_type}] {info_type}: {msg}")
 
 
+def serialize_numpy(numpy_array):
+    """
+    Serialize a numpy array for one track. This is the recommended way of putting a
+     numpy array into shared memory object store.
+
+    :exception object_store_exceptions.SMOSInputTypeError: If input is not a numpy array
+
+    :param numpy_array: numpy array to be serialized
+    :return: entry_config, numpy_array
+    """
+    # check if input is a numpy array
+    if not type(numpy_array) == np.ndarray:
+        raise SMOS_exceptions.SMOSInputTypeError(f"Input not numpy array.")
+
+    # construct entry config for each array
+    entry_config = EntryConfig(dtype=numpy_array.dtype, shape=numpy_array.shape, is_numpy=True)
+    return entry_config, numpy_array
+
+
 def serialize_numpy_list(numpy_list):
     """
     Serialize a list of numpy arrays for multiple tracks. This is the recommended
@@ -159,25 +178,6 @@ def serialize_numpy_list(numpy_list):
         entry_config = EntryConfig(dtype=np_array.dtype, shape=np_array.shape, is_numpy=True)
         entry_config_list.append(entry_config)
     return entry_config_list, numpy_list
-
-
-def serialize_numpy(numpy_array):
-    """
-    Serialize a numpy array for one track. This is the recommended way of putting a
-     numpy array into shared memory object store.
-
-    :exception object_store_exceptions.SMOSInputTypeError: If input is not a numpy array
-
-    :param numpy_array: numpy array to be serialized
-    :return: entry_config, numpy_array
-    """
-    # check if input is a numpy array
-    if not type(numpy_array) == np.ndarray:
-        raise SMOS_exceptions.SMOSInputTypeError(f"Input not numpy array.")
-
-    # construct entry config for each array
-    entry_config = EntryConfig(dtype=numpy_array.dtype, shape=numpy_array.shape, is_numpy=True)
-    return entry_config, numpy_array
 
 
 def serialize(obj):
