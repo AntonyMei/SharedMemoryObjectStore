@@ -174,3 +174,31 @@ class SharedMemoryObjectStore:
         # return
         return status
 
+    # delete
+    def delete_entry_config(self, name, idx, force_delete=False):
+        """
+        Delete entry at given index from given SharedMemoryObject. Note that this is lazy
+        delete, the actual data in shared memory is not erased.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param idx: index of entry to be deleted
+        :param force_delete: whether to delete the entry when there are still pending readers
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if index out of range,
+                 SMOS_PERMISSION_DENIED if permission denied
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # delete entry config
+        self.global_lock.reader_enter()
+        status = self.object_dict[name].delete_entry_config(idx=idx, force_delete=force_delete)
+        self.global_lock.reader_leave()
+
+        # return
+        return status
+
