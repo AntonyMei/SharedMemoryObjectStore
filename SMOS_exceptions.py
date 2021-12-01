@@ -76,3 +76,19 @@ class SMOSMappingError(Exception):
     block in some DataTrack.
     """
     pass
+
+
+class SMOSObjectExistError(Exception):
+    """
+    This exception is raised when trying to create a new SharedMemoryObject using name
+    that already exists in SMOS.
+    """
+    pass
+
+
+class SMOSObjectNotFoundError(Exception):
+    """
+    This exception is raised when trying a access a SharedMemoryObject that does not
+    exist in SMOS.
+    """
+    pass
