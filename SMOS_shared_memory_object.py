@@ -3,7 +3,6 @@
 This file contains class SharedMemoryObject, which is basic component of SMOS.
 """
 import random
-import sys
 
 import SMOS_exceptions
 import SMOS_utils as utils
