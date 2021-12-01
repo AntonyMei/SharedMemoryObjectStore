@@ -2,7 +2,6 @@
 2021.11.29 Yixuan Mei
 This file contains class SharedMemoryObject, which is basic component of SMOS.
 """
-import random
 
 import SMOS_exceptions
 import SMOS_utils as utils
