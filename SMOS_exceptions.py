@@ -92,3 +92,10 @@ class SMOSObjectNotFoundError(Exception):
     exist in SMOS.
     """
     pass
+
+
+class SMOSServerDropOut(Exception):
+    """
+    This exception is raised when SMOS server process accidentally terminates.
+    """
+    pass
