@@ -202,3 +202,53 @@ class SharedMemoryObjectStore:
         # return
         return status
 
+    # pop and free
+    def pop_entry_config(self, name, force_pop=False):
+        """
+        Pop an entry from SharedMemoryObject. Note that blocks to which the entry is mapped
+        will not be freed in this function (since data in the entry will be used after pop).
+        Call free_block_mapping to free the block when data in the entry is no longer useful.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param force_pop: whether to pop the entry when there are still pending readers
+        :return: [SMOS_SUCCESS, entry_config_list] if successful,
+                 [SMOS_FAIL, None] if data track empty,
+                 [SMOS_PERMISSION_DENIED, None] if permission denied
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # pop entry config
+        self.global_lock.reader_enter()
+        status, entry_config_list = self.object_dict[name].pop_entry_config(force_pop=force_pop)
+        self.global_lock.reader_leave()
+
+        # return
+        return status, entry_config_list
+
+    def free_block_mapping(self, name, entry_config_list: [utils.EntryConfig]):
+        """
+        Free blocks associated with a previously popped entry.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param entry_config_list: configurations of entry to be freed
+        :return: always SMOS_SUCCESS
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # free block mapping
+        self.global_lock.reader_enter()
+        self.object_dict[name].free_block_mapping(entry_config_list=entry_config_list)
+        self.global_lock.reader_leave()
+
+        # return
+        return SMOS_SUCCESS
