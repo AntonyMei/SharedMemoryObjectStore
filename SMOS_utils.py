@@ -130,7 +130,7 @@ def log2terminal(info_type, msg, worker_type=""):
     :param msg: message body
     :param worker_type: (optional) Identifies who send this message.
     """
-    print(f"[(pid={os.getpid()}){worker_type}] {info_type}: {msg}")
+    print(f"[(pid={os.getpid()}){worker_type}] {info_type}: {msg}", flush=True)
 
 
 def serialize_numpy(numpy_array):

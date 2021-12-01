@@ -283,7 +283,12 @@ class SharedMemoryObjectStore:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
 
         # get names
-        return self.object_dict[object_name].get_shm_name_list()
+        self.global_lock.reader_enter()
+        shm_name_list = self.object_dict[object_name].get_shm_name_list()
+        self.global_lock.reader_leave()
+
+        # return
+        return shm_name_list
 
     def get_entry_offset(self, name, entry_config_list: [utils.EntryConfig]):
         """
@@ -301,4 +306,30 @@ class SharedMemoryObjectStore:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
 
         # get offset
-        return self.object_dict[name].get_entry_offset(entry_config_list=entry_config_list)
+        self.global_lock.reader_enter()
+        status, offset_list = self.object_dict[name].get_entry_offset(entry_config_list=entry_config_list)
+        self.global_lock.reader_leave()
+
+        # return
+        return status, offset_list
+
+    def profile(self):
+        """
+        Profiles SMOS usage.
+        """
+        # fetch data
+        self.global_lock.reader_enter()
+        name_list = []
+        entry_count_list = []
+        capacity_list = []
+        for shm_object in list(self.object_dict.values()):
+            name_list.append(shm_object.name)
+            entry_count_list.append(shm_object.get_entry_count())
+            capacity_list.append(shm_object.max_capacity)
+        self.global_lock.reader_leave()
+
+        # print to terminal
+        for idx in range(len(name_list)):
+            utils.log2terminal(info_type="Info", msg=f"{name_list[idx]}: {entry_count_list[idx]}"
+                                                     f"/{capacity_list[idx]}")
+
