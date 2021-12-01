@@ -252,3 +252,17 @@ class SharedMemoryObjectStore:
 
         # return
         return SMOS_SUCCESS
+
+    # stop
+    def stop(self):
+        """
+        Stop SharedMemoryObjectStore for safe exit
+
+        :return: always SMOS_Success
+        """
+        # stop all objects
+        for shm_object in list(self.object_dict.values()):
+            shm_object.stop()
+
+        # release lock
+        del self.global_lock
