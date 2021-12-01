@@ -1,5 +1,5 @@
 """
-2021.12.01
+2021.12.01 Yixuan Mei
 This file contains class SharedMemoryObjectStore, which is core of SMOS.
 """
 
