@@ -171,6 +171,48 @@ def serialize_numpy_list(numpy_list):
     return entry_config_list, numpy_list
 
 
+def deserialize_numpy(entry_config: EntryConfig, offset, buffer):
+    """
+    Deserialize a numpy array from buffer (zero copy).
+
+    :exception SMOS_exceptions.SMOSInputTypeError: if entry does not contain data of
+               a numpy array
+
+    :param entry_config: configuration of target entry
+    :param offset: offset in buffer
+    :param buffer: buffer that stores the data
+    :return: deserialized numpy array
+    """
+    # check if input is numpy
+    if not entry_config.is_numpy:
+        raise SMOS_exceptions.SMOSInputTypeError("Current entry is not numpy.")
+
+    # deserialize
+    deserialized_array = np.ndarray(shape=entry_config.shape, dtype=entry_config.dtype,
+                                    buffer=buffer, offset=offset)
+    return deserialized_array
+
+
+def deserialize_numpy_list(entry_config_list: [EntryConfig], offset_list, buffer_list):
+    """
+    Deserialize a list of numpy arrays from buffers (zero copy).
+
+    :param entry_config_list: configuration of target entries
+    :param offset_list: offset in buffer
+    :param buffer_list: buffer that stores the data
+    :return: a list of deserialized numpy arrays
+    """
+    # deserialize
+    deserialized_array_list = []
+    for idx in range(len(entry_config_list)):
+        deserialized_array = deserialize_numpy(entry_config=entry_config_list[idx],
+                                               offset=offset_list[idx], buffer=buffer_list[idx])
+        deserialized_array_list.append(deserialized_array)
+
+    # return
+    return deserialized_array_list
+
+
 def serialize(obj):
     """
     This is a general serializer based on pickle. Note that (list of) numpy arrays
