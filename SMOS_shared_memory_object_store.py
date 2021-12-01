@@ -34,7 +34,7 @@ class SharedMemoryObjectStore:
         :param track_name_list: (optional) name of each track
         :return: always SMOS_SUCCESS
         """
-        # check if name already exists
+        # check if object already exists
         if name in self.object_dict:
             raise SMOS_exceptions.SMOSObjectExistError(f"Object with name {name} already exists.")
 
@@ -43,4 +43,32 @@ class SharedMemoryObjectStore:
         self.object_dict[name] = SharedMemoryObject(name=name, max_capacity=max_capacity, track_count=track_count,
                                                     block_size_list=block_size_list, track_name_list=track_name_list)
         self.global_lock.writer_leave()
+
+        # return
+        return SMOS_SUCCESS
+
+    def remove(self, name):
+        """
+        Remove SharedMemoryObject specified by name from SMOS. Note that this is potentially
+        destructive since all pending accesses to the object will raise FileNotFound error since
+        shared memory space is freed.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if object to be deleted does not exist
+
+        :param name: name of object to be removed
+        :return: always SMOSSuccess
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # delete SharedMemoryObject
+        self.global_lock.writer_enter()
+        shm_object = self.object_dict[name]
+        shm_object.stop()
+        del shm_object
+        del self.object_dict[name]
+        self.global_lock.writer_leave()
+
+        # return
         return SMOS_SUCCESS
