@@ -72,3 +72,32 @@ class SharedMemoryObjectStore:
 
         # return
         return SMOS_SUCCESS
+
+    # entry manipulation
+    # write
+    def allocate_block(self, name, entry_config_list: [utils.EntryConfig]):
+        """
+        Allocate block for new entry in SharedMemoryObject with given name.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param entry_config_list: configurations of new entry, one for each track
+        :return: [SMOS_SUCCESS, entry_config_list] if successful,
+                 [SMOS_FAIL, None] if no free block available
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # allocate block
+        self.global_lock.reader_enter()
+        status = self.object_dict[name].allocate_block(entry_config_list=entry_config_list)
+        self.global_lock.reader_leave()
+
+        # return
+        if status == SMOS_SUCCESS:
+            return SMOS_SUCCESS, entry_config_list
+        else:
+            return SMOS_FAIL, None
