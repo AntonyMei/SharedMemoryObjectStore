@@ -4,10 +4,16 @@ This file contains function tests for Shared Memory Object Store
 """
 import time
 import numpy as np
+import SMOS
 import SMOS_utils
 import SMOS_data_track as dt
 
+import multiprocessing as mp
 from multiprocessing import shared_memory
+
+def remote_test():
+    print(SMOS.test)
+
 
 def main():
     start = time.time()
@@ -41,6 +47,11 @@ def main():
     # res = SMOS_utils.deserialize(c)
     # print(res)
     """"""""""""""""""""""""""""""""""""""""""""""""
+
+    SMOS.test = 123
+    p = mp.Process(target=remote_test)
+    p.start()
+    p.join()
 
     end = time.time()
     print(f"time:{end - start}")
