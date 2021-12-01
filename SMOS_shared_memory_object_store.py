@@ -266,3 +266,39 @@ class SharedMemoryObjectStore:
 
         # release lock
         del self.global_lock
+
+    # utility functions
+    def get_shm_names(self, object_name):
+        """
+        Get names of all shared memories associated with given SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param object_name: name of the SharedMemoryObject
+        :return: list of shared memory names
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # get names
+        return self.object_dict[object_name].get_shm_name_list()
+
+    def get_entry_offset(self, name, entry_config_list: [utils.EntryConfig]):
+        """
+        Get offset of each track for given entry in shared memory space.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param entry_config_list: configurations of entry to be queried
+        :return: always [SMOS_SUCCESS, offset_list]
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # get offset
+        return self.object_dict[name].get_entry_offset(entry_config_list=entry_config_list)
