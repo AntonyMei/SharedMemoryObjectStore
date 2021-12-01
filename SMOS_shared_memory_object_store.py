@@ -34,12 +34,10 @@ class SharedMemoryObjectStore:
         :param track_name_list: (optional) name of each track
         :return: always SMOS_SUCCESS
         """
-        # check if object already exists
-        if name in self.object_dict:
-            raise SMOS_exceptions.SMOSObjectExistError(f"Object with name {name} already exists.")
-
         # create SharedMemoryObject
         self.global_lock.writer_enter()
+        if name in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectExistError(f"Object with name {name} already exists.")
         self.object_dict[name] = SharedMemoryObject(name=name, max_capacity=max_capacity, track_count=track_count,
                                                     block_size_list=block_size_list, track_name_list=track_name_list)
         self.global_lock.writer_leave()
@@ -58,12 +56,10 @@ class SharedMemoryObjectStore:
         :param name: name of object to be removed
         :return: always SMOSSuccess
         """
-        # check if object exists
-        if name not in self.object_dict:
-            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
         # delete SharedMemoryObject
         self.global_lock.writer_enter()
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
         shm_object = self.object_dict[name]
         shm_object.stop()
         del shm_object
@@ -87,12 +83,10 @@ class SharedMemoryObjectStore:
         :return: [SMOS_SUCCESS, entry_config_list] if successful,
                  [SMOS_FAIL, None] if no free block available
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # allocate block
-        self.global_lock.reader_enter()
         status = self.object_dict[name].allocate_block(entry_config_list=entry_config_list)
         self.global_lock.reader_leave()
 
@@ -113,12 +107,10 @@ class SharedMemoryObjectStore:
         :param entry_config_list: configurations of new entry, one for each track
         :return: always SMOS_SUCCESS
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # append entry config
-        self.global_lock.reader_enter()
         self.object_dict[name].append_entry_config(entry_config_list=entry_config_list)
         self.global_lock.reader_leave()
 
@@ -138,12 +130,10 @@ class SharedMemoryObjectStore:
         :return: [SMOS_SUCCESS, entry_config_list] if successful,
                  [SMOS_FAIL, None] if index out of range
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # read
-        self.global_lock.reader_enter()
         status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx)
         self.global_lock.reader_leave()
 
@@ -162,12 +152,10 @@ class SharedMemoryObjectStore:
         :return: SMOS_SUCCESS if successful,
                  SMOS_FAIL if index out of range
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # release read reference
-        self.global_lock.reader_enter()
         status = self.object_dict[name].release_read_reference(idx=idx)
         self.global_lock.reader_leave()
 
@@ -190,12 +178,10 @@ class SharedMemoryObjectStore:
                  SMOS_FAIL if index out of range,
                  SMOS_PERMISSION_DENIED if permission denied
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # delete entry config
-        self.global_lock.reader_enter()
         status = self.object_dict[name].delete_entry_config(idx=idx, force_delete=force_delete)
         self.global_lock.reader_leave()
 
@@ -218,12 +204,10 @@ class SharedMemoryObjectStore:
                  [SMOS_FAIL, None] if data track empty,
                  [SMOS_PERMISSION_DENIED, None] if permission denied
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # pop entry config
-        self.global_lock.reader_enter()
         status, entry_config_list = self.object_dict[name].pop_entry_config(force_pop=force_pop)
         self.global_lock.reader_leave()
 
@@ -241,12 +225,10 @@ class SharedMemoryObjectStore:
         :param entry_config_list: configurations of entry to be freed
         :return: always SMOS_SUCCESS
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # free block mapping
-        self.global_lock.reader_enter()
         self.object_dict[name].free_block_mapping(entry_config_list=entry_config_list)
         self.global_lock.reader_leave()
 
@@ -261,8 +243,10 @@ class SharedMemoryObjectStore:
         :return: always SMOS_Success
         """
         # stop all objects
+        self.global_lock.writer_enter()
         for shm_object in list(self.object_dict.values()):
             shm_object.stop()
+        self.global_lock.writer_leave()
 
         # release lock
         del self.global_lock
@@ -278,12 +262,10 @@ class SharedMemoryObjectStore:
         :param object_name: name of the SharedMemoryObject
         :return: list of shared memory names
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # get names
-        self.global_lock.reader_enter()
         shm_name_list = self.object_dict[object_name].get_shm_name_list()
         self.global_lock.reader_leave()
 
@@ -301,12 +283,10 @@ class SharedMemoryObjectStore:
         :param entry_config_list: configurations of entry to be queried
         :return: always [SMOS_SUCCESS, offset_list]
         """
-        # check if object exists
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # get offset
-        self.global_lock.reader_enter()
         status, offset_list = self.object_dict[name].get_entry_offset(entry_config_list=entry_config_list)
         self.global_lock.reader_leave()
 
@@ -319,9 +299,7 @@ class SharedMemoryObjectStore:
         """
         # fetch data
         self.global_lock.reader_enter()
-        name_list = []
-        entry_count_list = []
-        capacity_list = []
+        name_list, entry_count_list, capacity_list = [], [], []
         for shm_object in list(self.object_dict.values()):
             name_list.append(shm_object.name)
             entry_count_list.append(shm_object.get_entry_count())
