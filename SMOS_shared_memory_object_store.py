@@ -124,3 +124,53 @@ class SharedMemoryObjectStore:
 
         # return
         return SMOS_SUCCESS
+
+    # read
+    def read_entry_config(self, name, idx):
+        """
+        Read entry configuration at given index form given SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param idx: index of entry to be read
+        :return: [SMOS_SUCCESS, entry_config_list] if successful,
+                 [SMOS_FAIL, None] if index out of range
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # read
+        self.global_lock.reader_enter()
+        status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx)
+        self.global_lock.reader_leave()
+
+        # return
+        return status, entry_config_list
+
+    def release_read_reference(self, name, idx):
+        """
+        Release read reference on given entry from given SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param idx: index of entry to be released
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if index out of range
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # release read reference
+        self.global_lock.reader_enter()
+        status = self.object_dict[name].release_read_reference(idx=idx)
+        self.global_lock.reader_leave()
+
+        # return
+        return status
+
