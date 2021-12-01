@@ -2,14 +2,14 @@
 2021.12.01 Yixuan Mei
 This file contains class Server, which manages SharedMemoryObjectStore in a remote process.
 """
+import multiprocessing as mp
 import time
+from multiprocessing.managers import BaseManager
 
 import SMOS_exceptions
 import SMOS_utils as utils
-from SMOS_constants import SMOS_FAIL, SMOS_SUCCESS
+from SMOS_constants import SMOS_SUCCESS
 from SMOS_shared_memory_object_store import SharedMemoryObjectStore
-from multiprocessing.managers import BaseManager
-import multiprocessing as mp
 
 
 class Server:
@@ -43,7 +43,7 @@ class Server:
 
         :return: always SMOS_SUCCESS
         """
-        self.server_process = mp.Process(target=start_server, args=(self.connection, ))
+        self.server_process = mp.Process(target=start_server, args=(self.connection,))
         self.server_process.start()
         self.object_store = get_object_store(self.connection)
         return SMOS_SUCCESS
