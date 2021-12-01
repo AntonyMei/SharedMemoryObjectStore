@@ -89,15 +89,6 @@ class ConnectionDescriptor:
         self.port = port
         self.authkey = authkey
 
-    def get_ip(self):
-        return self.ip
-
-    def get_port(self):
-        return self.port
-
-    def get_authkey(self):
-        return self.authkey
-
 
 def get_local_free_port(num, low, high):
     """
