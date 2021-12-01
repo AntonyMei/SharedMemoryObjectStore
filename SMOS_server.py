@@ -14,15 +14,28 @@ import multiprocessing as mp
 
 class Server:
 
-    def __init__(self, connection: utils.ConnectionDescriptor):
+    def __init__(self, connection: utils.ConnectionDescriptor = None):
         """
         SMOSServer runs an instance of SharedMemoryObjectStore remotely.
 
         :param connection: a ConnectionDescriptor that specifies address of SMOS server
         """
-        self.connection = connection
+        if connection is not None:
+            self.connection = connection
+        else:
+            port = utils.get_local_free_port(1, 5000, 5050)[0]
+            self.connection = utils.ConnectionDescriptor(ip="localhost", port=port,
+                                                         authkey="antony")
         self.server_process = None
         self.object_store = None
+
+    def address(self):
+        """
+        Get the address that server listens
+
+        :return: address that server listens
+        """
+        return self.connection
 
     def start(self):
         """
