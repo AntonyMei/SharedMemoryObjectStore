@@ -101,3 +101,26 @@ class SharedMemoryObjectStore:
             return SMOS_SUCCESS, entry_config_list
         else:
             return SMOS_FAIL, None
+
+    def append_entry_config(self, name, entry_config_list: [utils.EntryConfig]):
+        """
+        Append configurations of a new entry into given SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param entry_config_list: configurations of new entry, one for each track
+        :return: always SMOS_SUCCESS
+        """
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # append entry config
+        self.global_lock.reader_enter()
+        self.object_dict[name].append_entry_config(entry_config_list=entry_config_list)
+        self.global_lock.reader_leave()
+
+        # return
+        return SMOS_SUCCESS
