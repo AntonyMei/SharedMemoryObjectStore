@@ -99,6 +99,10 @@ class ObjectHandle:
         """
         # basic information
         self.name = None
+        self.track_count = None
+
+        # management
+        self.entry_config_list = None
 
 
 def get_local_free_port(num, low, high):
