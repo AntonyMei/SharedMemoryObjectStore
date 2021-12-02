@@ -65,9 +65,12 @@ class Client:
         """TODO: finish this"""
         pass
 
-    # fine-grained operations for numpy arrays (zero copy)
+    # entry management
+    # fine-grained operations for num(zero copy)
+    #    write procedure: create_entry -> open_shm -> seal_entry
+    #    read procedure:  open_entry   -> open_shm -> release_entry
     # create entry
-    def create_entry(self, name, dtype_list, shape_list):
+    def create_entry(self, name, dtype_list, shape_list, is_numpy_list):
         """
         Create a new entry in given SharedMemoryObject.
 
@@ -75,8 +78,9 @@ class Client:
                    different of number of tracks
 
         :param name: name of target SharedMemoryObject
-        :param dtype_list: dtype for each track
-        :param shape_list: shape for each track
+        :param dtype_list: dtype for each track (None if not numpy)
+        :param shape_list: shape for each track (None if not numpy)
+        :param is_numpy_list: if track stores numpy array
         :return: [SMOS_SUCCESS, ObjectHandle] if successful
                  [SMOS_FAIL, None] if no free space available in target object
         """
@@ -91,7 +95,7 @@ class Client:
         entry_config_list = []
         for track_idx in range(track_count):
             entry_config = utils.EntryConfig(dtype=dtype_list[track_idx], shape=shape_list[track_idx],
-                                             is_numpy=True)
+                                             is_numpy=is_numpy_list[track_idx])
             entry_config_list.append(entry_config)
 
         # allocate block
