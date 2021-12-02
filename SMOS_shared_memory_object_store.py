@@ -260,7 +260,7 @@ class SharedMemoryObjectStore:
                    does not exist
 
         :param object_name: name of the SharedMemoryObject
-        :return: list of shared memory names
+        :return: always [SMOS_SUCCESS, list of shared memory names]
         """
         # query target SharedMemoryObject
         self.global_lock.reader_enter()
@@ -270,7 +270,7 @@ class SharedMemoryObjectStore:
         self.global_lock.reader_leave()
 
         # return
-        return shm_name_list
+        return SMOS_SUCCESS, shm_name_list
 
     def get_entry_offset(self, name, entry_config_list: [utils.EntryConfig]):
         """
