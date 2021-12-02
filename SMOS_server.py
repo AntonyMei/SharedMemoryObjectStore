@@ -91,7 +91,7 @@ def start_server(connection: utils.ConnectionDescriptor):
     raise SMOS_exceptions.SMOSServerDropOut("Server drops")
 
 
-def get_object_store(connection: utils.ConnectionDescriptor):
+def get_object_store(connection: utils.ConnectionDescriptor) -> SharedMemoryObjectStore:
     """
     Get a reference of SMOS that lives in server process.
 
