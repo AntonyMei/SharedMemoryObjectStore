@@ -17,9 +17,9 @@ class Server:
 
     def __init__(self, connection: utils.ConnectionDescriptor = None):
         """
-        SMOSServer runs an instance of SharedMemoryObjectStore remotely.
+        Each Server instance runs an instance of SharedMemoryObjectStore remotely.
 
-        :param connection: a ConnectionDescriptor that specifies address of SMOS server
+        :param connection: (optional) a ConnectionDescriptor that specifies address of SMOS server
         """
         if connection is not None:
             self.connection = connection
