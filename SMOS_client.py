@@ -67,9 +67,9 @@ class Client:
 
     # entry management
     # fine-grained operations for num(zero copy)
-    #    write procedure: create_entry -> open_shm -> seal_entry
-    #    read procedure:  open_entry   -> open_shm -> release_entry
-    # create entry
+    #    write procedure:  create_entry -> open_shm -> seal_entry
+    #    read procedure:   open_entry   -> open_shm -> release_entry
+    #    delete procedure: delete_entry
     def create_entry(self, name, dtype_list, shape_list, is_numpy_list):
         """
         Create a new entry in given SharedMemoryObject.
@@ -107,6 +107,29 @@ class Client:
             object_handle = utils.ObjectHandle()
             object_handle.name = name
             object_handle.track_count = track_count
+            object_handle.entry_config_list = entry_config_list
+            return SMOS_SUCCESS, object_handle
+        else:
+            return SMOS_FAIL, None
+
+    def open_entry(self, name, entry_idx):
+        """
+        Open entry specified by entry_idx from target SharedMemoryObject.
+
+        :param name: name of the SharedMemoryObject
+        :param entry_idx: index of entry to be read
+        :return: [SMOS_SUCCESS, ObjectHandle] if successful
+                 [SMOS_FAIL, None] if index out of range
+        """
+        # get entry config
+        status, entry_config_list = safe_execute(target=self.store.read_entry_config,
+                                                 args=(name, entry_idx, ))
+
+        # build object handle
+        if status == SMOS_SUCCESS:
+            object_handle = utils.ObjectHandle()
+            object_handle.name = name
+            object_handle.track_count = len(entry_config_list)
             object_handle.entry_config_list = entry_config_list
             return SMOS_SUCCESS, object_handle
         else:
