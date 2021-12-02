@@ -27,8 +27,46 @@ class Client:
         self.connection = connection
         self.store = SMOS_server.get_object_store(connection=connection)
 
+    # SharedMemoryObject management
+    def create_object(self, name, max_capacity, track_count, block_size_list, track_name_list=None):
+        """
+        Create a new SharedMemoryObject with given parameters in SMOS.
+
+        :param name: name of the object
+        :param max_capacity: maximum number of objects that can be stored in the new SharedMemoryObject
+        :param track_count: number of tracks in the new SharedMemoryObject
+        :param block_size_list: block size of each track
+        :param track_name_list: (optional) name of each track
+        :return: always SMOS_SUCCESS
+        """
+        # create object
+        status = safe_execute(target=self.store.create, args=(name, max_capacity, track_count,
+                                                              block_size_list, track_name_list, ))
+        return status
+
+    def remove_object(self, name):
+        """
+        Remove SharedMemoryObject specified by name from SMOS. Note that this is potentially
+        destructive since all pending accesses to the object will raise FileNotFound error since
+        shared memory space is freed.
+
+        :param name: name of object to be removed
+        :return: always SMOSSuccess
+        """
+        # create object
+        status = safe_execute(target=self.store.remove, args=(name, ))
+        return status
+
+    def put(self, obj, name):
+        """TODO: finish this"""
+        pass
+
+    def get(self, name):
+        """TODO: finish this"""
+        pass
+
     # fine-grained operations for numpy arrays (zero copy)
-    # write
+    # create entry
     def create_entry(self, name, dtype_list, shape_list):
         """
         Create a new entry in given SharedMemoryObject.
