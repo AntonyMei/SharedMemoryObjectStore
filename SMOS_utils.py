@@ -90,6 +90,17 @@ class ConnectionDescriptor:
         self.authkey = authkey
 
 
+class ObjectHandle:
+
+    def __init__(self):
+        """
+        Each ObjectHandle represents an entry of SharedMemoryObject in remote
+        SMOS server.
+        """
+        # basic information
+        self.name = None
+
+
 def get_local_free_port(num, low, high):
     """
     Get num free ports between low and high if possible.
@@ -111,6 +122,28 @@ def get_local_free_port(num, low, high):
         if len(port_list) == num:
             return port_list
     raise SMOS_exceptions.SMOSPortBusy(f"Out of free ports (required {num}, available {len(port_list)}).")
+
+
+def safe_execute(target, args=()):
+    """
+    Automatically retry when python multiprocessing manager fails due to
+    port number drainage. Wrap this outside every remote call to server
+    functions.
+
+    :param target: the function to run
+    :param args: arguments of target function
+    :return: what the function returns
+    """
+    fail_counter = 0
+    while True:
+        try:
+            return target(*args)
+        except TypeError:
+            if fail_counter > 10:
+                raise TypeError
+            else:
+                fail_counter += 1
+                log2terminal(info_type="Warning", msg=f"Proxy fails {fail_counter} times. Retrying...")
 
 
 def log2terminal(info_type, msg, worker_type=""):
