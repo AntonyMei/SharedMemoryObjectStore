@@ -252,27 +252,47 @@ class SharedMemoryObjectStore:
         del self.global_lock
 
     # utility functions
-    def get_shm_names(self, object_name):
+    def get_block_size_list(self, name):
+        """
+        Get block size of tracks in given SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :return: always [SMOS_SUCCESS, list of block size]
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+        block_size_list = self.object_dict[name].block_size_list
+        self.global_lock.reader_leave()
+
+        # return
+        return SMOS_SUCCESS, block_size_list
+
+    def get_shm_name_list(self, name):
         """
         Get names of all shared memories associated with given SharedMemoryObject.
 
         :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
                    does not exist
 
-        :param object_name: name of the SharedMemoryObject
+        :param name: name of the SharedMemoryObject
         :return: always [SMOS_SUCCESS, list of shared memory names]
         """
         # query target SharedMemoryObject
         self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-        shm_name_list = self.object_dict[object_name].get_shm_name_list()
+        shm_name_list = self.object_dict[name].get_shm_name_list()
         self.global_lock.reader_leave()
 
         # return
         return SMOS_SUCCESS, shm_name_list
 
-    def get_entry_offset(self, name, entry_config_list: [utils.EntryConfig]):
+    def get_entry_offset_list(self, name, entry_config_list: [utils.EntryConfig]):
         """
         Get offset of each track for given entry in shared memory space.
 
