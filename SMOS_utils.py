@@ -221,8 +221,8 @@ def serialize(obj):
     :param obj: object to be serialized
     :return: entry_config, data_stream
     """
-    entry_config = EntryConfig(dtype=type(obj), shape=None, is_numpy=False)
     data_stream = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+    entry_config = EntryConfig(dtype=type(obj), shape=len(data_stream), is_numpy=False)
     return entry_config, data_stream
 
 
