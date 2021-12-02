@@ -2,6 +2,7 @@
 2021.12.01 Yixuan Mei
 This file contains class Server, which manages SharedMemoryObjectStore in a remote process.
 """
+
 import multiprocessing as mp
 import time
 from multiprocessing.managers import BaseManager
