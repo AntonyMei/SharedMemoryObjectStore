@@ -7,6 +7,7 @@ import numpy as np
 import SMOS_server
 import SMOS_utils
 import SMOS_data_track as dt
+import pickle
 
 import multiprocessing as mp
 from multiprocessing import shared_memory
@@ -38,6 +39,7 @@ def main():
     # print(b.mapped_block_idx)
 
     """"""""""""""""""""""""""""""""""""""""""""""""
+    # test merge byte arrays
     # test_obj = SMOS_utils.EntryConfig(dtype=1, shape=2, is_numpy=True)
     # _, stream = SMOS_utils.serialize(test_obj)
     # stream = bytearray(stream)
@@ -48,14 +50,28 @@ def main():
     # print(res)
     """"""""""""""""""""""""""""""""""""""""""""""""
 
-    server = SMOS_server.Server()
-    server.start()
-    address = server.address()
-    print(address.ip, address.port, address.authkey)
-    server.stop()
-    # p = mp.Process(target=remote_test)
-    # p.start()
-    # p.join()
+    # test SMOS
+    # server = SMOS_server.Server()
+    # server.start()
+    # address = server.address()
+    # print(address.ip, address.port, address.authkey)
+    # server.stop()
+    """"""""""""""""""""""""""""""""""""""""""""""""
+
+    # test write into shm
+    # create object
+    obj = SMOS_utils.EntryConfig(dtype=int, shape=(3,0), is_numpy=True)
+    serialized = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # put into shared memory
+    shm = shared_memory.SharedMemory(create=True, size=4096, name="Test")
+    shm.buf[0:len(serialized)] = serialized
+
+    # deserialize
+    deserialize_stream = shm.buf[0:len(serialized)]
+    recovered = SMOS_utils.deserialize(deserialize_stream)
+    del deserialize_stream
+    shm.unlink()
 
     end = time.time()
     print(f"time:{end - start}")
