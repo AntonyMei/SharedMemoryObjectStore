@@ -103,6 +103,8 @@ class ObjectHandle:
 
         # management
         self.entry_config_list = None
+        self.shm_list = []
+        self.buf_list = []  # this only contains shm.buf, used for clean up
 
 
 def get_local_free_port(num, low, high):

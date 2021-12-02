@@ -6,6 +6,9 @@ This file contains class Client, which should be instantiated in every process t
 import multiprocessing as mp
 import time
 from multiprocessing.managers import BaseManager
+from multiprocessing import shared_memory
+
+import numpy as np
 
 import SMOS_server
 import SMOS_exceptions
@@ -134,3 +137,42 @@ class Client:
             return SMOS_SUCCESS, object_handle
         else:
             return SMOS_FAIL, None
+
+    def open_shm(self, object_handle: utils.ObjectHandle):
+        """
+        Open data stored in target entry from shared memory space. For tracks that
+        store numpy array, the return value is a shared memory backed numpy array.
+        For tracks that store other customized types of data, return value is raw
+        buffer (shm.buf).
+
+        :param object_handle: handle of target entry
+        :return: always [SMOS_SUCCESS, a list of shm.buf / shm backed numpy array]
+        """
+        # get offset and shared memory name
+        _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
+                                      args=(object_handle.name, object_handle.entry_config_list, ))
+        _, block_size_list = safe_execute(target=self.store.get_block_size_list,
+                                          args=(object_handle.name, ))
+        _, shm_name_list = safe_execute(target=self.store.get_shm_name_list,
+                                        args=(object_handle.name, ))
+
+        # open shared memory and get data
+        return_list = []
+        for track_idx in range(object_handle.track_count):
+            # open shm
+            shm = shared_memory.SharedMemory(name=shm_name_list[track_idx])
+            object_handle.shm_list.append(shm)
+
+            # open data in different formats
+            entry_config = object_handle.entry_config_list[track_idx]
+            if entry_config.is_numpy:
+                mm_array = np.ndarray(shape=entry_config.shape, dtype=entry_config.dtype,
+                                      buffer=shm.buf, offset=offset_list[track_idx])
+                return_list.append(mm_array)
+            else:
+                buffer = shm.buf[offset_list[track_idx]: offset_list[track_idx] + block_size_list[track_idx]]
+                object_handle.buf_list.append(buffer)
+                return_list.append(buffer)
+
+        # return
+        return SMOS_SUCCESS, return_list
