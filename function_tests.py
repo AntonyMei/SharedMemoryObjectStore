@@ -15,6 +15,10 @@ from multiprocessing import shared_memory
 def remote_test():
     pass
 
+class test_wrap:
+
+    def __init__(self, data):
+        self.data = data
 
 def main():
     start = time.time()
@@ -70,7 +74,9 @@ def main():
     # deserialize
     deserialize_stream = shm.buf[0:len(serialized)]
     recovered = SMOS_utils.deserialize(deserialize_stream)
-    del deserialize_stream
+    b = test_wrap(deserialize_stream)
+    # b.data.release()
+    deserialize_stream.release()
     shm.unlink()
 
     end = time.time()
