@@ -224,7 +224,8 @@ class Client:
 
     def delete_entry(self, name, entry_idx, force_delete=False):
         """
-        Delete target entry from SharedMemoryObject specified by name.
+        Delete target entry from SharedMemoryObject specified by name. Note that this is lazy
+        delete, the actual data in shared memory is not erased.
 
         :param name: name of the SharedMemoryObject
         :param entry_idx: index of entry to be deleted
