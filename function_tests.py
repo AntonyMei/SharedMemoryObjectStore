@@ -46,12 +46,14 @@ def put(data, as_list=False):
 def func1():
     shm = shared_memory.SharedMemory(name="Test")
     res = np.ndarray(shape=(5, ), dtype=int, buffer=shm.buf)
-    return res, shm
+    print(res)
+    res2 = res.copy()
+    return res2
 
 def remote_test():
     print("123")
-    res, shm = func1()
-    print(res[0])
+    res= func1()
+    print(res)
     pass
 
 class test_wrap:
@@ -101,34 +103,37 @@ def main():
     # server.stop()
     """"""""""""""""""""""""""""""""""""""""""""""""
 
-    # # test write into shm
-    # # create object
-    # obj = SMOS_utils.EntryConfig(dtype=int, shape=(3,0), is_numpy=True)
-    # serialized = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
-    #
-    # # put into shared memory
-    # shm = shared_memory.SharedMemory(create=True, size=4096, name="Test")
-    # shm.buf[0:len(serialized)] = serialized
-    #
-    # # deserialize
-    # deserialize_stream = shm.buf[0:len(serialized)]
-    # recovered = SMOS_utils.deserialize(deserialize_stream)
-    # b = test_wrap(deserialize_stream)
-    # # b.data.release()
-    # deserialize_stream.release()
-    # # proc = mp.Process(target=remote_test)
-    # # proc.start()
-    # # proc.join()
-    # shm.unlink()
+    # test write into shm
+    # create object
+    obj = SMOS_utils.EntryConfig(dtype=int, shape=(3,0), is_numpy=True)
+    serialized = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+
+    # put into shared memory
+    shm = shared_memory.SharedMemory(create=True, size=4096, name="Test")
+    shm.buf[0:len(serialized)] = serialized
+
+    # deserialize
+    deserialize_stream = shm.buf[0:len(serialized)]
+    recovered = SMOS_utils.deserialize(deserialize_stream)
+    b = test_wrap(deserialize_stream)
+    # b.data.release()
+    deserialize_stream.release()
+    proc = mp.Process(target=remote_test)
+    proc.start()
+    proc.join()
+    shm.unlink()
 
     """"""""""""""""""""""""""""""""""""""""""""""""
-    put(1, False)
-    put(1, True)
-    put([1, 2, 3], False)
-    put([1, 2, 4], True)
-    put([[1, 1], [2, 2], [3, 3]], False)
-    put([[1, 1], [2, 2], [3, 3]], True)
-    put([[1, 1], [2, 2], [3, 3, 4]], False)
+    # put(1, False)
+    # put(1, True)
+    # put([1, 2, 3], False)
+    # put([1, 2, 4], True)
+    # put([[1, 1], [2, 2], [3, 3]], False)
+    # put([[1, 1], [2, 2], [3, 3]], True)
+    # put([[1, 1], [2, 2], [3, 3, 4]], False)
+
+    """"""""""""""""""""""""""""""""""""""""""""""""
+
     end = time.time()
     print(f"time:{end - start}")
 

@@ -156,8 +156,18 @@ class Client:
         # return
         return SMOS_SUCCESS
 
-    def get(self, name):
-        """TODO: finish this"""
+    def get(self, name, entry_idx=None):
+        """
+        Get a SharedMemoryObject from shared memory. The object will be reconstructed
+        to what it was before being passed into SMOS. Note that this function always
+        copies the data from shared memory.
+
+        :param name: name of object to get
+        :param entry_idx: if entry_idx is None, all entries in this SharedMemoryObject
+               will be returned
+        :return: always [SMOS_SUCCESS, reconstructed_object]
+        """
+        # get object
         pass
 
     # entry operations
