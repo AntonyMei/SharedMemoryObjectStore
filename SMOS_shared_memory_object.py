@@ -95,9 +95,11 @@ class SharedMemoryObject:
 
         :exception SMOS_exceptions.SMOSDimensionMismatch: if length of input is
                    different of number of tracks
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if different tracks return
+                   different index for newly appended entry
 
         :param entry_config_list: configurations of new entry, one for each track
-        :return: always SMOS_SUCCESS
+        :return: always [SMOS_SUCCESS, index of appended entry config]
         """
         # check input shape
         if not len(entry_config_list) == self.track_count:
@@ -106,12 +108,19 @@ class SharedMemoryObject:
 
         # append entry config
         self.lock.writer_enter()
+        entry_idx_list = []
         for track_idx in range(self.track_count):
-            self.track_list[track_idx].append_entry_config(entry_config=entry_config_list[track_idx])
+            track = self.track_list[track_idx]
+            _, entry_idx = track.append_entry_config(entry_config=entry_config_list[track_idx])
+            entry_idx_list.append(entry_idx)
         self.lock.writer_leave()
 
+        # check data integrity
+        if not len(set(entry_idx_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+
         # return
-        return SMOS_SUCCESS
+        return SMOS_SUCCESS, entry_idx_list[0]
 
     # read
     def read_entry_config(self, idx):

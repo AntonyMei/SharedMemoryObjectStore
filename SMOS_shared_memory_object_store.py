@@ -105,17 +105,17 @@ class SharedMemoryObjectStore:
 
         :param name: name of the SharedMemoryObject
         :param entry_config_list: configurations of new entry, one for each track
-        :return: always SMOS_SUCCESS
+        :return: always [SMOS_SUCCESS, index for appended entry]
         """
         # query target SharedMemoryObject
         self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-        self.object_dict[name].append_entry_config(entry_config_list=entry_config_list)
+        _, entry_idx = self.object_dict[name].append_entry_config(entry_config_list=entry_config_list)
         self.global_lock.reader_leave()
 
         # return
-        return SMOS_SUCCESS
+        return SMOS_SUCCESS, entry_idx
 
     # read
     def read_entry_config(self, name, idx):

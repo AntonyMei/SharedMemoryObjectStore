@@ -66,7 +66,7 @@ class DataTrack:
                    from track name of input entry_config
 
         :param entry_config: configuration of new entry
-        :return: always SMOS_SUCCESS
+        :return: always [SMOS_SUCCESS, index of appended entry config]
         """
         # check if entry_config has been correctly allocated
         if entry_config.mapped_block_idx == -1:
@@ -78,7 +78,7 @@ class DataTrack:
 
         # append entry config
         self.entry_config_list.append(entry_config)
-        return SMOS_SUCCESS
+        return SMOS_SUCCESS, len(self.entry_config_list) - 1
 
     # read
     def read_entry_config(self, idx):

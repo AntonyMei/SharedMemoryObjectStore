@@ -183,11 +183,11 @@ class Client:
         all other processes. Note that after commit, the object_handle will be destroyed.
 
         :param object_handle: handle of target entry
-        :return: always SMOS_SUCCESS
+        :return: always [SMOS_SUCCESS, index of newly committed entry]
         """
         # commit entry config
-        status = safe_execute(target=self.store.append_entry_config,
-                              args=(object_handle.name, object_handle.entry_config_list, ))
+        _, entry_idx = safe_execute(target=self.store.append_entry_config,
+                                    args=(object_handle.name, object_handle.entry_config_list, ))
 
         # clean up
         for buffer in object_handle.buf_list:
@@ -196,4 +196,4 @@ class Client:
             shm.close()
 
         # return
-        return status
+        return SMOS_SUCCESS, entry_idx
