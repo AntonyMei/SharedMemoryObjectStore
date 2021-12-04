@@ -196,4 +196,4 @@ class Client:
             shm.close()
 
         # return
-        return SMOS_SUCCESS
+        return status
