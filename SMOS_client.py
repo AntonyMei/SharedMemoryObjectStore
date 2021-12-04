@@ -156,19 +156,46 @@ class Client:
         # return
         return SMOS_SUCCESS
 
-    def get(self, name, entry_idx=None):
+    def get(self, name, entry_idx_list=None):
         """
         Get a SharedMemoryObject from shared memory. The object will be reconstructed
         to what it was before being passed into SMOS. Note that this function always
         copies the data from shared memory.
 
         :param name: name of object to get
-        :param entry_idx: if entry_idx is None, all entries in this SharedMemoryObject
-               will be returned
+        :param entry_idx_list: if entry_idx_list is None, all entries in this
+               SharedMemoryObject will be returned
         :return: always [SMOS_SUCCESS, reconstructed_object]
         """
-        # get object
-        pass
+        # determine query range
+        if entry_idx_list is None:
+            entry_idx_list = self.store.get_entry_idx_list(name=name)
+
+        # read and reconstruct data from shared memory
+        return_list = []
+        for entry_idx in entry_idx_list:
+            # read reconstructed object
+            status, handle, obj = self.read_from_object(name=name, entry_idx=entry_idx)
+            if status == SMOS_FAIL:
+                continue
+
+            # further reconstruction
+            if type(obj) == np.ndarray:
+                obj = obj.copy()
+            if type(obj) == list:
+                for track_idx in range(len(obj)):
+                    if type(obj[track_idx]) == np.ndarray:
+                        obj[track_idx] = obj[track_idx].copy()
+
+            # append to return list and release handle
+            return_list.append(obj)
+            self.release_entry(object_handle=handle)
+
+        # return
+        if len(return_list) == 1:
+            return SMOS_SUCCESS, return_list[0]
+        else:
+            return SMOS_SUCCESS, return_list
 
     # entry operations
     # fine-grained operations (zero copy)

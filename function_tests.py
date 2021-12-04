@@ -47,8 +47,8 @@ def func1():
     shm = shared_memory.SharedMemory(name="Test")
     res = np.ndarray(shape=(5, ), dtype=int, buffer=shm.buf)
     print(res)
-    res2 = res.copy()
-    return res2
+    res = res.copy()
+    return res
 
 def remote_test():
     print("123")
