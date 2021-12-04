@@ -99,6 +99,7 @@ class ObjectHandle:
         """
         # basic information
         self.name = None
+        self.entry_idx = None
         self.track_count = None
 
         # management

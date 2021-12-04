@@ -132,6 +132,7 @@ class Client:
         if status == SMOS_SUCCESS:
             object_handle = utils.ObjectHandle()
             object_handle.name = name
+            object_handle.entry_idx = entry_idx
             object_handle.track_count = len(entry_config_list)
             object_handle.entry_config_list = entry_config_list
             return SMOS_SUCCESS, object_handle
@@ -204,6 +205,19 @@ class Client:
         after this operation, object_handle is destroyed.
 
         :param object_handle: entry to be released
-        :return:
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if target entry does not exist (has been deleted)
         """
-        pass
+        # release read reference
+        status = safe_execute(target=self.store.release_read_reference,
+                              args=(object_handle.name, object_handle.entry_idx, ))
+
+        # clean up
+        if status == SMOS_SUCCESS:
+            for buffer in object_handle.buf_list:
+                buffer.release()
+            for shm in object_handle.shm_list:
+                shm.close()
+
+        # return
+        return status
