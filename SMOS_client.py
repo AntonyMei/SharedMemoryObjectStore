@@ -295,7 +295,24 @@ class Client:
         return SMOS_SUCCESS, object_handle, reconstructed_object
 
     def free_handle(self, object_handle: utils.ObjectHandle):
-        pass
+        """
+        Free an object_handle returned by a previous pop_from_object. This operation will
+        release all SMOS resources related with the handle. reconstructed_object's shared
+        memory arrays can no longer be accessed once this function is called.
+
+        :param object_handle: object handle to free
+        :return: always SMOS_SUCCESS
+        """
+        # free block mapping of underlying entry
+        _ = safe_execute(target=self.store.free_block_mapping,
+                         args=(object_handle.name, object_handle.entry_config_list))
+
+        # release resources
+        for shm in object_handle.shm_list:
+            shm.close()
+
+        # return
+        return SMOS_SUCCESS
 
     def push_to_object(self, name):
         pass
