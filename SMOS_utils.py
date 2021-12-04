@@ -259,11 +259,10 @@ def serialize(obj):
     should use serialize_numpy(_list) instead for better performance.
 
     :param obj: object to be serialized
-    :return: entry_config, data_stream
+    :return: data_stream
     """
     data_stream = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
-    entry_config = EntryConfig(dtype=type(obj), shape=len(data_stream), is_numpy=False)
-    return entry_config, data_stream
+    return data_stream
 
 
 def serialize_list(obj_list):
@@ -274,20 +273,18 @@ def serialize_list(obj_list):
     :exception object_store_exceptions.SMOSInputTypeError: If input is not a list.
 
     :param obj_list: list of objects to be serialized
-    :return: entry_config_list, data_stream_list
+    :return: data_stream_list
     """
     # check if input is a list
     if not type(obj_list) == list:
         raise SMOS_exceptions.SMOSInputTypeError("Input not list")
 
     # serialize
-    entry_config_list = []
     data_stream_list = []
     for obj in obj_list:
-        entry_config, data_stream = serialize(obj)
-        entry_config_list.append(entry_config)
+        data_stream = serialize(obj)
         data_stream_list.append(data_stream)
-    return entry_config_list, data_stream_list
+    return data_stream_list
 
 
 def deserialize(data_stream):

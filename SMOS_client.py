@@ -359,35 +359,41 @@ class Client:
             raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but input data"
                                                         f"has length {len(data)}.")
 
-        # serialize input data
-        serialized_data_list = []
+        # compute input data configuration
         dtype_list, shape_list, is_numpy_list = [], [], []
         for data_element in data:
             if type(data_element) == np.ndarray:
-                serialized_data_list.append(data_element)
                 dtype_list.append(data_element.dtype)
                 shape_list.append(data_element.shape)
                 is_numpy_list.append(True)
             else:
-                config, stream = utils.serialize(obj=data_element)
-                serialized_data_list.append(stream)
-                dtype_list.append(config.dtype)
-                shape_list.append(config.shape)
+                dtype_list.append(None)
+                shape_list.append(None)
                 is_numpy_list.append(False)
 
-        # create new entry and open shared memory
+        # create new entry
         status, object_handle = self.create_entry(name=name, dtype=dtype_list, shape=shape_list,
                                                   is_numpy=is_numpy_list)
         if status == SMOS_FAIL:
             return SMOS_FAIL, None
-        _, buffer_list = self.open_shm(object_handle=object_handle)
+
+        # serialize input data
+        serialized_data_list = []
+        for data_element in data:
+            if type(data_element) == np.ndarray:
+                serialized_data_list.append(data_element)
+            else:
+                stream = utils.serialize(data_element)
+                serialized_data_list.append(stream)
 
         # copy into shared memory
+        _, buffer_list = self.open_shm(object_handle=object_handle)
         for track_idx in track_count:
             if is_numpy_list[track_idx]:
                 buffer_list[track_idx][:] = serialized_data_list[track_idx][:]
             else:
-                buffer_list[track_idx][0:shape_list[track_idx]] = serialized_data_list[track_idx]
+                stream_length = len(serialized_data_list[track_idx])
+                buffer_list[track_idx][0:stream_length] = serialized_data_list[track_idx]
 
         # commit entry and return
         _, entry_idx = self.commit_entry(object_handle=object_handle)
