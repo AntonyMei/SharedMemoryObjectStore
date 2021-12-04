@@ -38,8 +38,9 @@ def put(data, as_list=False):
     if not len(set(track_count_list)) == 1:
         raise SMOS_exceptions.SMOSDimensionMismatch("Multiple entries have different number"
                                                     "of tracks.")
-
-    print(data)
+    entry_count = len(data)
+    track_count = track_count_list[0]
+    print(data, entry_count, track_count)
 
 
 def func1():
