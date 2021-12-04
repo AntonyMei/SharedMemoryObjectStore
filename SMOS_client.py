@@ -70,7 +70,7 @@ class Client:
 
     # entry management
     # fine-grained operations for num(zero copy)
-    #    write procedure:  create_entry -> open_shm -> seal_entry
+    #    write procedure:  create_entry -> open_shm -> commit_entry
     #    read procedure:   open_entry   -> open_shm -> release_entry
     #    delete procedure: delete_entry
     def create_entry(self, name, dtype_list, shape_list, is_numpy_list):
@@ -176,3 +176,24 @@ class Client:
 
         # return
         return SMOS_SUCCESS, return_list
+
+    def commit_entry(self, object_handle: utils.ObjectHandle):
+        """
+        Commit the entry to SMOS. After this operation the entry will be visible to
+        all other processes. Note that after commit, the object_handle will be destroyed.
+
+        :param object_handle: handle of target entry
+        :return: always SMOS_SUCCESS
+        """
+        # commit entry config
+        status = safe_execute(target=self.store.append_entry_config,
+                              args=(object_handle.name, object_handle.entry_config_list, ))
+
+        # clean up
+        for buffer in object_handle.buf_list:
+            buffer.release()
+        for shm in object_handle.shm_list:
+            shm.close()
+
+        # return
+        return SMOS_SUCCESS
