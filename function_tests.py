@@ -8,9 +8,39 @@ import SMOS_server
 import SMOS_utils
 import SMOS_data_track as dt
 import pickle
-
+import SMOS_exceptions
 import multiprocessing as mp
 from multiprocessing import shared_memory
+
+
+def put(data, as_list=False):
+    """
+    Create a SharedMemoryObject with name,  and put data into this SharedMemoryObject.
+
+    :param name: name of share memory object
+    :param data: data to be put into SMOS
+    :param as_list: If as_list = True and data is a list, then each element of the list
+           will be stored in a single entry in the SharedMemoryObject. In other cases,
+           data will be stored as a whole in one entry and the SharedMemoryObject will
+           have only one entry.
+    :param redundancy: Require redundancy number of extra free entries in new
+           SharedMemoryObject. These extra entries can be used by entry operations.
+    :return:
+    """
+    # format data and check integrity
+    if not as_list or not type(data) == list:
+        data = [data]
+    track_count_list = []
+    for entry_idx in range(len(data)):
+        if not type(data[entry_idx]) == list:
+            data[entry_idx] = [data[entry_idx]]
+        track_count_list.append(len(data[entry_idx]))
+    if not len(set(track_count_list)) == 1:
+        raise SMOS_exceptions.SMOSDimensionMismatch("Multiple entries have different number"
+                                                    "of tracks.")
+
+    print(data)
+
 
 def func1():
     shm = shared_memory.SharedMemory(name="Test")
@@ -70,26 +100,34 @@ def main():
     # server.stop()
     """"""""""""""""""""""""""""""""""""""""""""""""
 
-    # test write into shm
-    # create object
-    obj = SMOS_utils.EntryConfig(dtype=int, shape=(3,0), is_numpy=True)
-    serialized = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+    # # test write into shm
+    # # create object
+    # obj = SMOS_utils.EntryConfig(dtype=int, shape=(3,0), is_numpy=True)
+    # serialized = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+    #
+    # # put into shared memory
+    # shm = shared_memory.SharedMemory(create=True, size=4096, name="Test")
+    # shm.buf[0:len(serialized)] = serialized
+    #
+    # # deserialize
+    # deserialize_stream = shm.buf[0:len(serialized)]
+    # recovered = SMOS_utils.deserialize(deserialize_stream)
+    # b = test_wrap(deserialize_stream)
+    # # b.data.release()
+    # deserialize_stream.release()
+    # # proc = mp.Process(target=remote_test)
+    # # proc.start()
+    # # proc.join()
+    # shm.unlink()
 
-    # put into shared memory
-    shm = shared_memory.SharedMemory(create=True, size=4096, name="Test")
-    shm.buf[0:len(serialized)] = serialized
-
-    # deserialize
-    deserialize_stream = shm.buf[0:len(serialized)]
-    recovered = SMOS_utils.deserialize(deserialize_stream)
-    b = test_wrap(deserialize_stream)
-    # b.data.release()
-    deserialize_stream.release()
-    # proc = mp.Process(target=remote_test)
-    # proc.start()
-    # proc.join()
-    shm.unlink()
-
+    """"""""""""""""""""""""""""""""""""""""""""""""
+    put(1, False)
+    put(1, True)
+    put([1, 2, 3], False)
+    put([1, 2, 4], True)
+    put([[1, 1], [2, 2], [3, 3]], False)
+    put([[1, 1], [2, 2], [3, 3]], True)
+    put([[1, 1], [2, 2], [3, 3, 4]], False)
     end = time.time()
     print(f"time:{end - start}")
 

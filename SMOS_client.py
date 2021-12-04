@@ -69,9 +69,12 @@ class Client:
         status = safe_execute(target=self.store.remove, args=(name, ))
         return status
 
-    def put(self, name, data, as_list=False):
+    def put(self, name, data, as_list=False, redundancy=0):
         """
         Create a SharedMemoryObject with name,  and put data into this SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSDimensionMismatch: if multiple entries have different
+                   number of tracks
 
         :param name: name of share memory object
         :param data: data to be put into SMOS
@@ -79,9 +82,79 @@ class Client:
                will be stored in a single entry in the SharedMemoryObject. In other cases,
                data will be stored as a whole in one entry and the SharedMemoryObject will
                have only one entry.
-        :return:
+        :param redundancy: Require redundancy number of extra free entries in new
+               SharedMemoryObject. These extra entries can be used by entry operations.
+        :return: always SMOS_SUCCESS
         """
-        pass
+        # format data and check integrity
+        if not as_list or not type(data) == list:
+            data = [data]
+        track_count_list = []
+        for entry_idx in range(len(data)):
+            if not type(data[entry_idx]) == list:
+                data[entry_idx] = [data[entry_idx]]
+            track_count_list.append(len(data[entry_idx]))
+        if not len(set(track_count_list)) == 1:
+            raise SMOS_exceptions.SMOSDimensionMismatch("Multiple entries have different number"
+                                                        "of tracks.")
+        entry_count = len(data)
+        track_count = track_count_list[0]
+
+        # serialize data and calculate size
+        serialized_data, data_size_list, data_is_numpy_list = [], [], []
+        for data_entry in data:
+            serialized_entry = []
+            entry_size_list = []
+            is_numpy_list = []
+            for element in data_entry:
+                if type(element) == np.ndarray:
+                    serialized_entry.append(element)
+                    entry_size_list.append(element.nbytes)
+                    is_numpy_list.append(True)
+                else:
+                    serialized_stream = utils.serialize(element)
+                    serialized_entry.append(serialized_stream)
+                    entry_size_list.append(len(serialized_stream))
+                    is_numpy_list.append(False)
+            serialized_data.append(serialized_entry)
+            data_size_list.append(entry_size_list)
+            data_is_numpy_list.append(is_numpy_list)
+
+        # calculate max size and create SharedMemoryObject
+        block_size_list = [max(np.array(data_size_list)[:, i]) for i in range(track_count)]
+        self.create_object(name=name, max_capacity=entry_count+redundancy, track_count=track_count,
+                           block_size=block_size_list)
+
+        # create entry, write into shared memory and commit
+        for entry_idx in range(entry_count):
+            # create entry
+            serialized_entry = serialized_data[entry_idx]
+            is_numpy_list = data_is_numpy_list[entry_idx]
+            dtype_list, shape_list = [], []
+            for track_idx in range(track_count):
+                if is_numpy_list[track_idx]:
+                    dtype_list.append(serialized_entry[track_idx].dtype)
+                    shape_list.append(serialized_entry[track_idx].shape)
+                else:
+                    dtype_list.append(None)
+                    shape_list.append(None)
+            _, object_handle = self.create_entry(name=name, dtype=dtype_list, shape=shape_list,
+                                                 is_numpy=is_numpy_list)
+
+            # write into shared memory
+            _, buffer_list = self.open_shm(object_handle=object_handle)
+            for track_idx in range(track_count):
+                if is_numpy_list[track_idx]:
+                    buffer_list[track_idx][:] = serialized_entry[track_idx][:]
+                else:
+                    stream_length = len(serialized_entry[track_idx])
+                    buffer_list[track_idx][0:stream_length] = serialized_entry[track_idx]
+
+            # commit
+            self.commit_entry(object_handle=object_handle)
+
+        # return
+        return SMOS_SUCCESS
 
     def get(self, name):
         """TODO: finish this"""
