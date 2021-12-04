@@ -287,7 +287,7 @@ class Client:
                 reconstructed_object.append(mm_array)
             else:
                 buffer = shm.buf[offset_list[track_idx]: offset_list[track_idx] + block_size_list[track_idx]]
-                deserialized_object = utils.deserialize(buffer)
+                deserialized_object = utils.deserialize(data_stream=buffer)
                 buffer.release()
                 reconstructed_object.append(deserialized_object)
 
@@ -314,5 +314,57 @@ class Client:
         # return
         return SMOS_SUCCESS
 
-    def push_to_object(self, name, obj):
-        pass
+    def push_to_object(self, name, data):
+        """
+        Push data to target SharedMemoryObject.
+
+        :exception
+
+        :param name: name of the SharedMemoryObject
+        :param data: data to be pushed
+        :return: [SMOS_SUCCESS, entry_idx] if successful
+                 [SMOS_FAIL, None] if no free space available in target object
+        """
+        # ensure that data is a list
+        if not type(data) == list:
+            data = [data]
+
+        # check input dimension
+        track_count = safe_execute(target=self.store.get_track_count, args=(name, ))
+        if not len(data) == track_count:
+            raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but input data"
+                                                        f"has length {len(data)}.")
+
+        # serialize input data
+        serialized_data_list = []
+        dtype_list, shape_list, is_numpy_list = [], [], []
+        for data_element in data:
+            if type(data_element) == np.ndarray:
+                serialized_data_list.append(data_element)
+                dtype_list.append(data_element.dtype)
+                shape_list.append(data_element.shape)
+                is_numpy_list.append(True)
+            else:
+                config, stream = utils.serialize(obj=data_element)
+                serialized_data_list.append(stream)
+                dtype_list.append(config.dtype)
+                shape_list.append(config.shape)
+                is_numpy_list.append(False)
+
+        # create new entry and open shared memory
+        status, object_handle = self.create_entry(name=name, dtype_list=dtype_list, shape_list=shape_list,
+                                                  is_numpy_list=is_numpy_list)
+        if status == SMOS_FAIL:
+            return SMOS_FAIL, None
+        _, buffer_list = self.open_shm(object_handle=object_handle)
+
+        # copy into shared memory
+        for track_idx in track_count:
+            if is_numpy_list[track_idx]:
+                buffer_list[track_idx][:] = serialized_data_list[track_idx][:]
+            else:
+                buffer_list[track_idx][0:shape_list[track_idx]] = serialized_data_list[track_idx]
+
+        # commit entry and return
+        _, entry_idx = self.commit_entry(object_handle=object_handle)
+        return SMOS_SUCCESS, entry_idx
