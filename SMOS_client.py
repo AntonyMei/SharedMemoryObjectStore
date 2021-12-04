@@ -69,10 +69,10 @@ class Client:
         pass
 
     # entry management
-    # fine-grained operations for num(zero copy)
-    #    write procedure:  create_entry -> open_shm -> commit_entry
-    #    read procedure:   open_entry   -> open_shm -> release_entry
-    #    delete procedure: delete_entry
+    # fine-grained operations (zero copy)
+    #    create procedure:  create_entry  ->  open_shm  ->  commit_entry
+    #    r/w procedure:     open_entry    ->  open_shm  ->  release_entry
+    #    delete procedure:  delete_entry
     def create_entry(self, name, dtype_list, shape_list, is_numpy_list):
         """
         Create a new entry in given SharedMemoryObject.
