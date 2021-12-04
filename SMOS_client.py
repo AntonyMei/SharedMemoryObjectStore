@@ -63,7 +63,7 @@ class Client:
         status = safe_execute(target=self.store.remove, args=(name, ))
         return status
 
-    def put(self, obj, name):
+    def put(self, name, obj):
         """TODO: finish this"""
         pass
 
@@ -314,5 +314,5 @@ class Client:
         # return
         return SMOS_SUCCESS
 
-    def push_to_object(self, name):
+    def push_to_object(self, name, obj):
         pass
