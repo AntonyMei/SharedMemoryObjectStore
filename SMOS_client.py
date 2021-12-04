@@ -197,3 +197,13 @@ class Client:
 
         # return
         return SMOS_SUCCESS, entry_idx
+
+    def release_entry(self, object_handle: utils.ObjectHandle):
+        """
+        Release read reference to target entry when reading is finished. Note that
+        after this operation, object_handle is destroyed.
+
+        :param object_handle: entry to be released
+        :return:
+        """
+        pass
