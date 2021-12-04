@@ -30,7 +30,10 @@ class Client:
         self.connection = connection
         self.store = SMOS_server.get_object_store(connection=connection)
 
-    # SharedMemoryObject management
+    # SharedMemoryObject operations
+    #   workflow 1:  create_object  ->  [entry operations]  ->  remove_object
+    #   workflow 2:  put            ->  (multiple) get
+    # These two usages can be combined.
     def create_object(self, name, max_capacity, track_count, block_size_list, track_name_list=None):
         """
         Create a new SharedMemoryObject with given parameters in SMOS.
@@ -68,7 +71,7 @@ class Client:
         """TODO: finish this"""
         pass
 
-    # entry management
+    # entry operations
     # fine-grained operations (zero copy)
     #    create procedure:  create_entry  ->  open_shm  ->  commit_entry
     #    r/w procedure:     open_entry    ->  open_shm  ->  release_entry
@@ -238,3 +241,26 @@ class Client:
         status = safe_execute(target=self.store.delete_entry_config,
                               args=(name, entry_idx, force_delete, ))
         return status
+
+    # coarse-grained operations (queue API)
+    #   write process: push_to_object
+    #   read process:  pop_from_object  ->  free_handle
+    def pop_from_object(self, name, force_pop=False):
+        """
+        Pop an entry from target object. This function reconstructs data to what it
+        was before being passed into SMOS.
+
+        :param name: name of the SharedMemoryObject
+        :param force_pop: whether to pop an entry when there are still pending readers
+        :return: [SMOS_SUCCESS, object_handle, reconstructed_object] if successful
+                 [SMOS_FAIL, None, None] if target SharedMemoryObject is empty
+                 [SMOS_PERMISSION_DENIED, None, None] if permission denied
+        """
+        # get entry config
+        pass
+
+    def free_handle(self, object_handle: utils.ObjectHandle):
+        pass
+
+    def push_to_object(self, name):
+        pass
