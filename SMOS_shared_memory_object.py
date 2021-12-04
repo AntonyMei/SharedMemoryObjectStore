@@ -305,6 +305,20 @@ class SharedMemoryObject:
         # return
         return SMOS_SUCCESS, offset_list
 
+    def get_entry_idx_list(self):
+        """
+        Get index of all entries in current SharedMemoryObject.
+
+        :return: entry_idx_list
+        """
+        # get entry_idx_list
+        self.lock.reader_enter()
+        entry_idx_list = self.track_list[0].entry_config_list.keys()
+        self.lock.reader_leave()
+
+        # return
+        return entry_idx_list
+
     def get_entry_count(self):
         """
         Get number of entries in current SharedMemoryObject. Note that this

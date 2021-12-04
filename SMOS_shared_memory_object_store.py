@@ -313,6 +313,26 @@ class SharedMemoryObjectStore:
         # return
         return status, offset_list
 
+    def get_entry_idx_list(self, name):
+        """
+        Get all entry index in given SharedMemoryObject
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :return: always [SMOS_SUCCESS, entry_idx_list]
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+        entry_idx_list = self.object_dict[name].get_entry_idx_list()
+        self.global_lock.reader_leave()
+
+        # return
+        return SMOS_SUCCESS, entry_idx_list
+
     def get_track_count(self, name):
         """
         Get track count of target SharedMemoryObject
