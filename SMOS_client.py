@@ -358,6 +358,7 @@ class Client:
     # coarse-grained operations (queue API)
     #   write process: push_to_object
     #   read process:  pop_from_object  ->  free_handle
+    #                  read_from_object ->  release_entry
     def pop_from_object(self, name, force_pop=False):
         """
         Pop an entry from target object. This function reconstructs data to what it
@@ -386,6 +387,58 @@ class Client:
         # build object handle (partial build)
         object_handle = utils.ObjectHandle()
         object_handle.name = name
+        object_handle.entry_config_list = entry_config_list
+
+        # reconstruct object
+        reconstructed_object = []
+        for track_idx in range(len(entry_config_list)):
+            shm = shared_memory.SharedMemory(name=shm_name_list[track_idx])
+            entry_config = entry_config_list[track_idx]
+            if entry_config.is_numpy:
+                mm_array = np.ndarray(shape=entry_config.shape, dtype=entry_config.dtype,
+                                      buffer=shm.buf, offset=offset_list[track_idx])
+                object_handle.shm_list.append(shm)
+                reconstructed_object.append(mm_array)
+            else:
+                buffer = shm.buf[offset_list[track_idx]: offset_list[track_idx] + block_size_list[track_idx]]
+                deserialized_object = utils.deserialize(data_stream=buffer)
+                buffer.release()
+                reconstructed_object.append(deserialized_object)
+
+        # return
+        if len(reconstructed_object) == 1:
+            return SMOS_SUCCESS, object_handle, reconstructed_object[0]
+        else:
+            return SMOS_SUCCESS, object_handle, reconstructed_object
+
+    def read_from_object(self, name, entry_idx):
+        """
+        Read an entry from target SharedMemoryObject. This function reconstructs data
+        to what it was before being passed into SMOS.
+
+        :param name: name of the SharedMemoryObject
+        :param entry_idx: index of entry to be read
+        :return: [SMOS_SUCCESS, object_handle, reconstructed_object] if successful
+                 [SMOS_FAIL, None, None] if entry does not exist in target SharedMemoryObject
+        """
+        # pop entry config
+        status, entry_config_list = safe_execute(target=self.store.read_entry_config,
+                                                 args=(name, entry_idx,))
+
+        # check if we successfully get entry config
+        if not status == SMOS_SUCCESS:
+            return status, None, None
+
+        # get shared memory info
+        _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
+                                      args=(name, entry_config_list,))
+        _, block_size_list = safe_execute(target=self.store.get_block_size_list, args=(name,))
+        _, shm_name_list = safe_execute(target=self.store.get_shm_name_list, args=(name,))
+
+        # build object handle (partial build)
+        object_handle = utils.ObjectHandle()
+        object_handle.name = name
+        object_handle.entry_idx = entry_idx
         object_handle.entry_config_list = entry_config_list
 
         # reconstruct object
