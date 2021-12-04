@@ -69,8 +69,18 @@ class Client:
         status = safe_execute(target=self.store.remove, args=(name, ))
         return status
 
-    def put(self, name, obj):
-        """TODO: finish this"""
+    def put(self, name, data, as_list=False):
+        """
+        Create a SharedMemoryObject with name,  and put data into this SharedMemoryObject.
+
+        :param name: name of share memory object
+        :param data: data to be put into SMOS
+        :param as_list: If as_list = True and data is a list, then each element of the list
+               will be stored in a single entry in the SharedMemoryObject. In other cases,
+               data will be stored as a whole in one entry and the SharedMemoryObject will
+               have only one entry.
+        :return:
+        """
         pass
 
     def get(self, name):
