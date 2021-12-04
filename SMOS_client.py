@@ -34,20 +34,26 @@ class Client:
     #   workflow 1:  create_object  ->  [entry operations]  ->  remove_object
     #   workflow 2:  put            ->  (multiple) get
     # These two usages can be combined.
-    def create_object(self, name, max_capacity, track_count, block_size_list, track_name_list=None):
+    def create_object(self, name, max_capacity, track_count, block_size, track_name=None):
         """
         Create a new SharedMemoryObject with given parameters in SMOS.
 
         :param name: name of the object
         :param max_capacity: maximum number of objects that can be stored in the new SharedMemoryObject
         :param track_count: number of tracks in the new SharedMemoryObject
-        :param block_size_list: block size of each track
-        :param track_name_list: (optional) name of each track
+        :param block_size: block size of each track, a list if there are multiple tracks
+        :param track_name: (optional) name of each track, a list if there are multiple tracks
         :return: always SMOS_SUCCESS
         """
+        # ensure that block_size and track_name are lists
+        if not type(block_size) == list:
+            block_size = [block_size]
+        if track_name is not None and not type(track_name) == list:
+            track_name = [track_name]
+
         # create object
         status = safe_execute(target=self.store.create, args=(name, max_capacity, track_count,
-                                                              block_size_list, track_name_list, ))
+                                                              block_size, track_name, ))
         return status
 
     def remove_object(self, name):
@@ -76,7 +82,7 @@ class Client:
     #    create procedure:  create_entry  ->  open_shm  ->  commit_entry
     #    r/w procedure:     open_entry    ->  open_shm  ->  release_entry
     #    delete procedure:  delete_entry
-    def create_entry(self, name, dtype_list, shape_list, is_numpy_list):
+    def create_entry(self, name, dtype, shape, is_numpy):
         """
         Create a new entry in given SharedMemoryObject.
 
@@ -84,12 +90,26 @@ class Client:
                    different of number of tracks
 
         :param name: name of target SharedMemoryObject
-        :param dtype_list: dtype for each track (None if not numpy)
-        :param shape_list: shape for each track (None if not numpy)
-        :param is_numpy_list: if track stores numpy array
+        :param dtype: dtype for each track (None if not numpy), a list if there are multiple tracks
+        :param shape: shape for each track (None if not numpy), a list if there are multiple tracks
+        :param is_numpy: if track stores numpy array, a list if there are multiple tracks
         :return: [SMOS_SUCCESS, ObjectHandle] if successful
                  [SMOS_FAIL, None] if no free space available in target object
         """
+        # ensure that inputs are lists
+        if not type(dtype) == list:
+            dtype_list = list(dtype)
+        else:
+            dtype_list = dtype
+        if not type(shape) == list:
+            shape_list = list(shape)
+        else:
+            shape_list = shape
+        if not type(is_numpy) == list:
+            is_numpy_list = list(is_numpy)
+        else:
+            is_numpy_list = is_numpy
+
         # check input integrity
         track_count = safe_execute(target=self.store.get_track_count, args=(name, ))
         if not len(dtype_list) == len(shape_list) == track_count:
@@ -292,7 +312,10 @@ class Client:
                 reconstructed_object.append(deserialized_object)
 
         # return
-        return SMOS_SUCCESS, object_handle, reconstructed_object
+        if len(reconstructed_object) == 1:
+            return SMOS_SUCCESS, object_handle, reconstructed_object[0]
+        else:
+            return SMOS_SUCCESS, object_handle, reconstructed_object
 
     def free_handle(self, object_handle: utils.ObjectHandle):
         """
@@ -318,7 +341,8 @@ class Client:
         """
         Push data to target SharedMemoryObject.
 
-        :exception
+        :exception SMOS_exceptions.SMOSDimensionMismatch: if the number of elements in data is
+                   different from track_count of target SharedMemoryObject
 
         :param name: name of the SharedMemoryObject
         :param data: data to be pushed
@@ -352,8 +376,8 @@ class Client:
                 is_numpy_list.append(False)
 
         # create new entry and open shared memory
-        status, object_handle = self.create_entry(name=name, dtype_list=dtype_list, shape_list=shape_list,
-                                                  is_numpy_list=is_numpy_list)
+        status, object_handle = self.create_entry(name=name, dtype=dtype_list, shape=shape_list,
+                                                  is_numpy=is_numpy_list)
         if status == SMOS_FAIL:
             return SMOS_FAIL, None
         _, buffer_list = self.open_shm(object_handle=object_handle)
