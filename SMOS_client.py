@@ -3,19 +3,15 @@
 This file contains class Client, which should be instantiated in every process that uses SMOS.
 """
 
-import multiprocessing as mp
-import time
-from multiprocessing.managers import BaseManager
 from multiprocessing import shared_memory
 
 import numpy as np
 
-import SMOS_server
 import SMOS_exceptions
+import SMOS_server
 import SMOS_utils as utils
-from SMOS_utils import safe_execute
 from SMOS_constants import SMOS_SUCCESS, SMOS_FAIL
-from SMOS_shared_memory_object_store import SharedMemoryObjectStore
+from SMOS_utils import safe_execute
 
 
 class Client:
@@ -53,7 +49,7 @@ class Client:
 
         # create object
         status = safe_execute(target=self.store.create, args=(name, max_capacity, track_count,
-                                                              block_size, track_name, ))
+                                                              block_size, track_name,))
         return status
 
     def remove_object(self, name):
@@ -66,7 +62,7 @@ class Client:
         :return: always SMOSSuccess
         """
         # create object
-        status = safe_execute(target=self.store.remove, args=(name, ))
+        status = safe_execute(target=self.store.remove, args=(name,))
         return status
 
     def put(self, name, data, as_list=False, redundancy=0):
@@ -122,7 +118,7 @@ class Client:
 
         # calculate max size and create SharedMemoryObject
         block_size_list = [max(np.array(data_size_list)[:, i]) for i in range(track_count)]
-        self.create_object(name=name, max_capacity=entry_count+redundancy, track_count=track_count,
+        self.create_object(name=name, max_capacity=entry_count + redundancy, track_count=track_count,
                            block_size=block_size_list)
 
         # create entry, write into shared memory and commit
@@ -231,7 +227,7 @@ class Client:
             is_numpy_list = is_numpy
 
         # check input integrity
-        track_count = safe_execute(target=self.store.get_track_count, args=(name, ))
+        track_count = safe_execute(target=self.store.get_track_count, args=(name,))
         if not len(dtype_list) == len(shape_list) == track_count:
             raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but only "
                                                         f"{len(dtype_list)} input dtypes and {len(shape_list)}"
@@ -246,7 +242,7 @@ class Client:
 
         # allocate block
         status, entry_config_list = safe_execute(target=self.store.allocate_block,
-                                                 args=(name, entry_config_list, ))
+                                                 args=(name, entry_config_list,))
 
         # build object handle and return
         if status == SMOS_SUCCESS:
@@ -269,7 +265,7 @@ class Client:
         """
         # get entry config
         status, entry_config_list = safe_execute(target=self.store.read_entry_config,
-                                                 args=(name, entry_idx, ))
+                                                 args=(name, entry_idx,))
 
         # build object handle
         if status == SMOS_SUCCESS:
@@ -294,11 +290,11 @@ class Client:
         """
         # get offset and shared memory name
         _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
-                                      args=(object_handle.name, object_handle.entry_config_list, ))
+                                      args=(object_handle.name, object_handle.entry_config_list,))
         _, block_size_list = safe_execute(target=self.store.get_block_size_list,
-                                          args=(object_handle.name, ))
+                                          args=(object_handle.name,))
         _, shm_name_list = safe_execute(target=self.store.get_shm_name_list,
-                                        args=(object_handle.name, ))
+                                        args=(object_handle.name,))
 
         # open shared memory and get data
         return_list = []
@@ -331,7 +327,7 @@ class Client:
         """
         # commit entry config
         _, entry_idx = safe_execute(target=self.store.append_entry_config,
-                                    args=(object_handle.name, object_handle.entry_config_list, ))
+                                    args=(object_handle.name, object_handle.entry_config_list,))
 
         # clean up
         for buffer in object_handle.buf_list:
@@ -353,7 +349,7 @@ class Client:
         """
         # release read reference
         status = safe_execute(target=self.store.release_read_reference,
-                              args=(object_handle.name, object_handle.entry_idx, ))
+                              args=(object_handle.name, object_handle.entry_idx,))
 
         # clean up
         if status == SMOS_SUCCESS:
@@ -379,7 +375,7 @@ class Client:
         """
         # delete entry
         status = safe_execute(target=self.store.delete_entry_config,
-                              args=(name, entry_idx, force_delete, ))
+                              args=(name, entry_idx, force_delete,))
         return status
 
     # coarse-grained operations (queue API)
@@ -399,7 +395,7 @@ class Client:
         """
         # pop entry config
         status, entry_config_list = safe_execute(target=self.store.pop_entry_config,
-                                                 args=(name, force_pop, ))
+                                                 args=(name, force_pop,))
 
         # check if we successfully get entry config
         if not status == SMOS_SUCCESS:
@@ -528,7 +524,7 @@ class Client:
             data = [data]
 
         # check input dimension
-        track_count = safe_execute(target=self.store.get_track_count, args=(name, ))
+        track_count = safe_execute(target=self.store.get_track_count, args=(name,))
         if not len(data) == track_count:
             raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but input data"
                                                         f"has length {len(data)}.")
