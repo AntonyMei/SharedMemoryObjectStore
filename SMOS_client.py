@@ -256,8 +256,43 @@ class Client:
                  [SMOS_FAIL, None, None] if target SharedMemoryObject is empty
                  [SMOS_PERMISSION_DENIED, None, None] if permission denied
         """
-        # get entry config
-        pass
+        # pop entry config
+        status, entry_config_list = safe_execute(target=self.store.pop_entry_config,
+                                                 args=(name, force_pop, ))
+
+        # check if we successfully get entry config
+        if not status == SMOS_SUCCESS:
+            return status, None, None
+
+        # get shared memory info
+        _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
+                                      args=(name, entry_config_list,))
+        _, block_size_list = safe_execute(target=self.store.get_block_size_list, args=(name,))
+        _, shm_name_list = safe_execute(target=self.store.get_shm_name_list, args=(name,))
+
+        # build object handle (partial build)
+        object_handle = utils.ObjectHandle()
+        object_handle.name = name
+        object_handle.entry_config_list = entry_config_list
+
+        # reconstruct object
+        reconstructed_object = []
+        for track_idx in range(len(entry_config_list)):
+            shm = shared_memory.SharedMemory(name=shm_name_list[track_idx])
+            entry_config = entry_config_list[track_idx]
+            if entry_config.is_numpy:
+                mm_array = np.ndarray(shape=entry_config.shape, dtype=entry_config.dtype,
+                                      buffer=shm.buf, offset=offset_list[track_idx])
+                object_handle.shm_list.append(shm)
+                reconstructed_object.append(mm_array)
+            else:
+                buffer = shm.buf[offset_list[track_idx]: offset_list[track_idx] + block_size_list[track_idx]]
+                deserialized_object = utils.deserialize(buffer)
+                buffer.release()
+                reconstructed_object.append(deserialized_object)
+
+        # return
+        return SMOS_SUCCESS, object_handle, reconstructed_object
 
     def free_handle(self, object_handle: utils.ObjectHandle):
         pass

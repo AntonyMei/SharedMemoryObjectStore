@@ -12,7 +12,15 @@ import pickle
 import multiprocessing as mp
 from multiprocessing import shared_memory
 
+def func1():
+    shm = shared_memory.SharedMemory(name="Test")
+    res = np.ndarray(shape=(5, ), dtype=int, buffer=shm.buf)
+    return res, shm
+
 def remote_test():
+    print("123")
+    res, shm = func1()
+    print(res[0])
     pass
 
 class test_wrap:
@@ -77,6 +85,9 @@ def main():
     b = test_wrap(deserialize_stream)
     # b.data.release()
     deserialize_stream.release()
+    # proc = mp.Process(target=remote_test)
+    # proc.start()
+    # proc.join()
     shm.unlink()
 
     end = time.time()
