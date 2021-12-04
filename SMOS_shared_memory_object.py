@@ -132,7 +132,7 @@ class SharedMemoryObject:
 
         :param idx: index of entry to be read
         :return: [SMOS_SUCCESS, entry_config_list] if successful,
-                 [SMOS_FAIL, None] if index out of range
+                 [SMOS_FAIL, None] if target entry does not exist
         """
         # read entry config
         status_list = []
@@ -163,7 +163,7 @@ class SharedMemoryObject:
 
         :param idx: index of entry to be released
         :return: SMOS_SUCCESS if successful,
-                 SMOS_FAIL if index out of range
+                 SMOS_FAIL if target entry does not exist
         """
         # release read reference
         status_list = []
@@ -190,7 +190,7 @@ class SharedMemoryObject:
         :param idx: index of entry to be deleted
         :param force_delete: whether to delete the entry when there are still pending readers
         :return: SMOS_SUCCESS if successful,
-                 SMOS_FAIL if index out of range,
+                 SMOS_FAIL if target entry does not exist,
                  SMOS_PERMISSION_DENIED if permission denied
         """
         # delete entry config

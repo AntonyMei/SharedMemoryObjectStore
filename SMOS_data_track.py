@@ -35,7 +35,8 @@ class DataTrack:
         self.shm = shared_memory.SharedMemory(create=True, size=block_size * max_capacity, name=shm_name)
 
         # array management
-        self.entry_config_list = []
+        self.entry_config_list = {}
+        self.next_key = 0
         self.free_block_list = queue.Queue(maxsize=max_capacity)
         for i in range(max_capacity):
             self.free_block_list.put(i)
@@ -77,8 +78,9 @@ class DataTrack:
                                                     f" {entry_config.track_name}.")
 
         # append entry config
-        self.entry_config_list.append(entry_config)
-        return SMOS_SUCCESS, len(self.entry_config_list) - 1
+        self.entry_config_list[self.next_key] = entry_config
+        self.next_key += 1
+        return SMOS_SUCCESS, self.next_key - 1
 
     # read
     def read_entry_config(self, idx):
@@ -87,13 +89,13 @@ class DataTrack:
 
         :param idx: index of entry to be read
         :return: [SMOS_SUCCESS, entry_config] if successful,
-                 [SMOS_FAIL, None] if index out of range
+                 [SMOS_FAIL, None] if target entry does not exist
         """
         try:
             self.entry_config_list[idx].pending_readers += 1
             entry_config = self.entry_config_list[idx]
             return SMOS_SUCCESS, entry_config
-        except IndexError:
+        except KeyError:
             return SMOS_FAIL, None
 
     def release_read_reference(self, idx):
@@ -105,7 +107,7 @@ class DataTrack:
 
         :param idx: index of entry to be released
         :return: SMOS_SUCCESS if successful,
-                 SMOS_FAIL if index out of range
+                 SMOS_FAIL if target entry does not exist
         """
         try:
             self.entry_config_list[idx].pending_readers -= 1
@@ -113,7 +115,7 @@ class DataTrack:
                 raise SMOS_exceptions.SMOSReadRefDoubleRelease(f"Double release on track {self.track_name}"
                                                                f"index {idx}")
             return SMOS_SUCCESS
-        except IndexError:
+        except KeyError:
             return SMOS_FAIL
 
     # delete
@@ -128,7 +130,7 @@ class DataTrack:
         :param idx: index of entry to be deleted
         :param force_delete: whether to delete the entry when there are still pending readers
         :return: SMOS_SUCCESS if successful,
-                 SMOS_FAIL if index out of range,
+                 SMOS_FAIL if target entry does not exist,
                  SMOS_PERMISSION_DENIED if permission denied
         """
         try:
@@ -138,8 +140,9 @@ class DataTrack:
                 return SMOS_PERMISSION_DENIED
 
             # delete entry config and free
-            entry_config = self.entry_config_list.pop(idx)
+            entry_config = self.entry_config_list[idx]
             block_idx = entry_config.mapped_block_idx
+            del self.entry_config_list[idx]
             if block_idx in self.free_block_list.queue:
                 raise SMOS_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
                                                              f"freed in data track {self.track_name}.")
@@ -147,7 +150,7 @@ class DataTrack:
                 self.free_block_list.put(block_idx)
                 return SMOS_SUCCESS
 
-        except IndexError:
+        except KeyError:
             return SMOS_FAIL
 
     # pop and free
@@ -163,16 +166,20 @@ class DataTrack:
                  [SMOS_PERMISSION_DENIED, None] if permission denied
         """
         try:
+            # get smallest item
+            entry_idx = min(list(self.entry_config_list.keys()))
+
             # check permission
-            pop_permission = (self.entry_config_list[0].pending_readers == 0)
+            pop_permission = (self.entry_config_list[entry_idx].pending_readers == 0)
             if not pop_permission and not force_pop:
                 return SMOS_PERMISSION_DENIED, None
 
             # pop entry config
-            entry_config = self.entry_config_list.pop(0)
+            entry_config = self.entry_config_list[entry_idx]
+            del self.entry_config_list[entry_idx]
             return SMOS_SUCCESS, entry_config
 
-        except IndexError:
+        except KeyError:
             return SMOS_FAIL, None
 
     def free_block_mapping(self, entry_config: utils.EntryConfig):
