@@ -339,7 +339,8 @@ class Client:
 
     def push_to_object(self, name, data):
         """
-        Push data to target SharedMemoryObject.
+        Push data to target SharedMemoryObject. Note that if data is a list, then each element
+        in the list will be assigned to one track in SharedMemoryObject.
 
         :exception SMOS_exceptions.SMOSDimensionMismatch: if the number of elements in data is
                    different from track_count of target SharedMemoryObject
