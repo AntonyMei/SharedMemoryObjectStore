@@ -221,3 +221,19 @@ class Client:
 
         # return
         return status
+
+    def delete_entry(self, name, entry_idx, force_delete=False):
+        """
+        Delete target entry from SharedMemoryObject specified by name.
+
+        :param name: name of the SharedMemoryObject
+        :param entry_idx: index of entry to be deleted
+        :param force_delete: whether to delete the entry when there are still pending readers
+        :return: SMOS_SUCCESS if successful,
+                 SMOS_FAIL if target entry does not exist,
+                 SMOS_PERMISSION_DENIED if permission denied
+        """
+        # delete entry
+        status = safe_execute(target=self.store.delete_entry_config,
+                              args=(name, entry_idx, force_delete, ))
+        return status
