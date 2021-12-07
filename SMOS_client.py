@@ -227,7 +227,7 @@ class Client:
             is_numpy_list = is_numpy
 
         # check input integrity
-        track_count = safe_execute(target=self.store.get_track_count, args=(name,))
+        _, track_count = safe_execute(target=self.store.get_track_count, args=(name,))
         if not len(dtype_list) == len(shape_list) == track_count:
             raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but only "
                                                         f"{len(dtype_list)} input dtypes and {len(shape_list)}"
