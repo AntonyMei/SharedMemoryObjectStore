@@ -558,7 +558,7 @@ class Client:
 
         # copy into shared memory
         _, buffer_list = self.open_shm(object_handle=object_handle)
-        for track_idx in track_count:
+        for track_idx in range(track_count):
             if is_numpy_list[track_idx]:
                 buffer_list[track_idx][:] = serialized_data_list[track_idx][:]
             else:
