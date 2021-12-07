@@ -524,7 +524,7 @@ class Client:
             data = [data]
 
         # check input dimension
-        track_count = safe_execute(target=self.store.get_track_count, args=(name,))
+        _, track_count = safe_execute(target=self.store.get_track_count, args=(name,))
         if not len(data) == track_count:
             raise SMOS_exceptions.SMOSDimensionMismatch(f"There are {track_count} tracks, but input data"
                                                         f"has length {len(data)}.")
