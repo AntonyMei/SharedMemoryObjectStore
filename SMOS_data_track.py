@@ -269,7 +269,7 @@ def get_data_track(track_name, shm_name, block_size, max_capacity):
 
     while True:
         try:
-            track = DataTrack(track_name=track_name, shm_name=f"{shm_name}:{random.randint(0, SMOS_MAX)}",
+            track = DataTrack(track_name=track_name, shm_name=f"{shm_name}_{random.randint(0, SMOS_MAX)}",
                               block_size=block_size, max_capacity=max_capacity)
             return track
         except FileExistsError:

@@ -47,8 +47,8 @@ class SharedMemoryObject:
         # prepare tracks
         self.track_list = []
         for track_idx in range(track_count):
-            track = get_data_track(track_name=f"{name}:{self.track_name_list[track_idx]}",
-                                   shm_name=f"{name}:{self.track_name_list[track_idx]}",
+            track = get_data_track(track_name=f"{name}_{self.track_name_list[track_idx]}",
+                                   shm_name=f"{name}_{self.track_name_list[track_idx]}",
                                    block_size=self.block_size_list[track_idx], max_capacity=self.max_capacity)
             self.track_list.append(track)
 
