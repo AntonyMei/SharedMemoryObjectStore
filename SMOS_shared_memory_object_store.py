@@ -367,6 +367,7 @@ class SharedMemoryObjectStore:
         self.global_lock.reader_leave()
 
         # print to terminal
+        utils.log2terminal(info_type="Info", msg=f"start profiling:")
         for idx in range(len(name_list)):
             utils.log2terminal(info_type="Info", msg=f"{name_list[idx]}: {entry_count_list[idx]}"
                                                      f"/{capacity_list[idx]}")
