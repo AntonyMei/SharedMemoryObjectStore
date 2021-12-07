@@ -11,6 +11,7 @@ import pickle
 import SMOS_exceptions
 import multiprocessing as mp
 from multiprocessing import shared_memory
+import io
 
 
 def put(data, as_list=False):
@@ -105,7 +106,7 @@ def main():
 
     # test write into shm
     # create object
-    obj = SMOS_utils.EntryConfig(dtype=int, shape=(3,0), is_numpy=True)
+    obj = SMOS_utils.EntryConfig(dtype=int, shape=(3, 0), is_numpy=True)
     shm = shared_memory.SharedMemory(create=True, size=4096, name="Test")
     pickle.dump(obj=obj, file=shm.buf.obj, protocol=pickle.HIGHEST_PROTOCOL)
 
