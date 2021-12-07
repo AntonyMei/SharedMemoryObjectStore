@@ -33,6 +33,8 @@ def main():
     client = SMOS.Client(connection=server_address)
     print("start test")
 
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
     # 1: create & remove
     # client.create_object(name="obj1", max_capacity=4, track_count=3, block_size=[128, 128, 128])
     # client.remove_object(name="obj1")
@@ -61,12 +63,12 @@ def main():
     # client.release_entry(object_handle)
     #
     # client.remove_object(name="obj1")
-    #
-    # # clean up
-    # print("test finished")
-    # server.stop()
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    # clean up
+    print("test finished")
+    server.stop()
 
 
 if __name__ == '__main__':
