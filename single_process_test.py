@@ -37,7 +37,7 @@ def main():
 
     # 2: queue API ()
     client.create_object(name="obj1", max_capacity=4, track_count=3, block_size=[128, 128, 128])
-    client.push_to_object(name="obj1", data=[123, 456, 789])
+    client.push_to_object(name="obj1", data=[123, 456, np.ones(5)])
     client.remove_object(name="obj1")
 
     # clean up

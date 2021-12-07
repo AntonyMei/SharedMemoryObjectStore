@@ -217,6 +217,7 @@ class DataTrack:
 
         :return: always SMOS_SUCCESS
         """
+        self.shm.close()
         self.shm.unlink()
         return SMOS_SUCCESS
 
