@@ -161,7 +161,7 @@ class Client:
         :param name: name of object to get
         :param entry_idx_list: if entry_idx_list is None, all entries in this
                SharedMemoryObject will be returned
-        :return: always [SMOS_SUCCESS, reconstructed_object]
+        :return: reconstructed_object
         """
         # determine query range
         if entry_idx_list is None:
@@ -189,9 +189,9 @@ class Client:
 
         # return
         if len(return_list) == 1:
-            return SMOS_SUCCESS, return_list[0]
+            return return_list[0]
         else:
-            return SMOS_SUCCESS, return_list
+            return return_list
 
     # entry operations
     # fine-grained operations (zero copy)
