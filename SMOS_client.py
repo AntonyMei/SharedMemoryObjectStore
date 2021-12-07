@@ -550,23 +550,13 @@ class Client:
         if status == SMOS_FAIL:
             return SMOS_FAIL, None
 
-        # serialize input data
-        serialized_data_list = []
-        for data_element in data:
-            if type(data_element) == np.ndarray:
-                serialized_data_list.append(data_element)
-            else:
-                stream = utils.serialize(data_element)
-                serialized_data_list.append(stream)
-
-        # copy into shared memory
+        # serialize input data and copy into shared memory
         _, buffer_list = self.open_shm(object_handle=object_handle)
         for track_idx in range(track_count):
             if is_numpy_list[track_idx]:
-                buffer_list[track_idx][:] = serialized_data_list[track_idx][:]
+                buffer_list[track_idx][:] = data[track_idx][:]
             else:
-                stream_length = len(serialized_data_list[track_idx])
-                buffer_list[track_idx][0:stream_length] = serialized_data_list[track_idx]
+                utils.serialize(obj=data[track_idx], file=buffer_list[track_idx].obj)
 
         # commit entry and return
         _, entry_idx = self.commit_entry(object_handle=object_handle)

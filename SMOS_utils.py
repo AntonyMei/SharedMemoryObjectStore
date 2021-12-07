@@ -278,16 +278,21 @@ def deserialize_numpy_list(entry_config_list: [EntryConfig], offset_list, buffer
     return deserialized_array_list
 
 
-def serialize(obj):
+def serialize(obj, file=None):
     """
     This is a general serializer based on pickle. Note that (list of) numpy arrays
     should use serialize_numpy(_list) instead for better performance.
 
     :param obj: object to be serialized
-    :return: data_stream
+    :param file: file to write the stream into
+    :return: data_stream if file is None
+             no return if file is not None
     """
-    data_stream = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
-    return data_stream
+    if file is None:
+        data_stream = pickle.dumps(obj=obj, protocol=pickle.HIGHEST_PROTOCOL)
+        return data_stream
+    else:
+        pickle.dump(obj=obj, file=file, protocol=pickle.HIGHEST_PROTOCOL)
 
 
 def serialize_list(obj_list):
