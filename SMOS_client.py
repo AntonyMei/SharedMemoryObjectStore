@@ -288,6 +288,7 @@ class Client:
         :param object_handle: handle of target entry
         :return: always [SMOS_SUCCESS, a list of shm.buf / shm backed numpy array]
         """
+        utils.remove_shm_from_resource_tracker()
         # get offset and shared memory name
         _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
                                       args=(object_handle.name, object_handle.entry_config_list,))

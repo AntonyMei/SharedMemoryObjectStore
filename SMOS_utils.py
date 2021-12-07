@@ -11,6 +11,7 @@ import socket
 import numpy as np
 
 import SMOS_exceptions
+from multiprocessing import resource_tracker
 
 
 class EntryConfig:
@@ -151,6 +152,28 @@ def safe_execute(target, args=()):
             else:
                 fail_counter += 1
                 log2terminal(info_type="Warning", msg=f"Proxy fails {fail_counter} times. Retrying...")
+
+
+def remove_shm_from_resource_tracker():
+    """Monkey-patch multiprocessing.resource_tracker so SharedMemory won't be tracked
+
+    More details at: https://bugs.python.org/issue38119
+    """
+
+    def fix_register(name, rtype):
+        if rtype == "shared_memory":
+            return
+        return resource_tracker._resource_tracker.register(self, name, rtype)
+    resource_tracker.register = fix_register
+
+    def fix_unregister(name, rtype):
+        if rtype == "shared_memory":
+            return
+        return resource_tracker._resource_tracker.unregister(self, name, rtype)
+    resource_tracker.unregister = fix_unregister
+
+    if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
+        del resource_tracker._CLEANUP_FUNCS["shared_memory"]
 
 
 def log2terminal(info_type, msg, worker_type=""):

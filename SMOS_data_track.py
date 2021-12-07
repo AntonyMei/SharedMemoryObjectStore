@@ -32,6 +32,7 @@ class DataTrack:
         self.max_capacity = max_capacity
 
         # underlying shared memory space
+        utils.remove_shm_from_resource_tracker()
         self.shm = shared_memory.SharedMemory(create=True, size=block_size * max_capacity, name=shm_name)
 
         # array management

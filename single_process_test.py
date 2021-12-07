@@ -36,8 +36,13 @@ def main():
     # client.remove_object(name="obj1")
 
     # 2: queue API ()
-    client.create_object(name="obj1", max_capacity=4, track_count=3, block_size=[128, 128, 128])
-    client.push_to_object(name="obj1", data=[123, 456, np.ones(5)])
+    client.create_object(name="obj1", max_capacity=4, track_count=3, block_size=[128, 130, 132])
+
+    client.push_to_object(name="obj1", data=[np.ones(5), np.ones(5), 234])
+    status, object_handle, obj = client.pop_from_object(name="obj1")
+    print(status, obj)
+    client.free_handle(object_handle)
+
     client.remove_object(name="obj1")
 
     # clean up
