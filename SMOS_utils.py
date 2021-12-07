@@ -7,11 +7,11 @@ import multiprocessing
 import os
 import pickle
 import socket
+from multiprocessing import resource_tracker
 
 import numpy as np
 
 import SMOS_exceptions
-from multiprocessing import resource_tracker
 
 
 class EntryConfig:
@@ -164,12 +164,14 @@ def remove_shm_from_resource_tracker():
         if rtype == "shared_memory":
             return
         return resource_tracker._resource_tracker.register(self, name, rtype)
+
     resource_tracker.register = fix_register
 
     def fix_unregister(name, rtype):
         if rtype == "shared_memory":
             return
         return resource_tracker._resource_tracker.unregister(self, name, rtype)
+
     resource_tracker.unregister = fix_unregister
 
     if "shared_memory" in resource_tracker._CLEANUP_FUNCS:
