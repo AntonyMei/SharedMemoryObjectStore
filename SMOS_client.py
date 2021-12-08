@@ -174,6 +174,7 @@ class Client:
             # read reconstructed object
             status, handle, obj = self.read_from_object(name=name, entry_idx=entry_idx)
             if status == SMOS_FAIL:
+                return_list.append(None)
                 continue
 
             # further reconstruction
