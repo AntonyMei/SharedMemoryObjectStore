@@ -3,14 +3,15 @@
 This file is used to test SMOS correctness in single process case.
 """
 import multiprocessing as mp
+import random
 import time
 
 import SMOS
 import numpy as np
 
-reader_count = 32
-writer_count = 32
-shm_count = 4
+reader_count = 36
+writer_count = 36
+shm_count = 6
 object_count = 200
 object_entry_count = 50 * 1024 * 1024
 
@@ -21,9 +22,10 @@ def writer(idx, address, name):
     for i in range(object_count):
         status, _ = client.push_to_object(name=name, data=data)
         if status == SMOS.SMOS_SUCCESS:
-            print(f"w {data[0]}", flush=True)
+            print(f"w {int(data[0])}", flush=True)
             data[0] += 1
         else:
+            print(f"[write fail ({idx})]", flush=True)
             time.sleep(1)
 
 
@@ -32,10 +34,11 @@ def reader(idx, address, name):
     for i in range(object_count):
         status, handle, data = client.pop_from_object(name=name)
         if status == SMOS.SMOS_SUCCESS:
-            print(f"r {data[0]}", flush=True)
+            print(f"r {int(data[0])}", flush=True)
             client.free_handle(handle)
         else:
-            time.sleep(5)
+            print(f"[read fail ({idx})]", flush=True)
+            time.sleep(random.random() * 5)
 
 
 def main():
@@ -83,7 +86,7 @@ def main():
                 end_pure = time.time()
                 timer_flag = True
         if alive_count == 0:
-            print(f"***************************** Max timer starts *****************************", flush=True)
+            print(f"***************************** Max timer ends *****************************", flush=True)
             end_max = time.time()
             break
 
