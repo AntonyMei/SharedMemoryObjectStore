@@ -66,38 +66,41 @@ def main():
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    # fined-grained operation test
-    # print("fined-grained test")
-    #
-    # # write
-    # data = np.random.randn(10)
-    # client.create_object(name="obj1", max_capacity=2, track_count=1, block_size=512)
-    # _, handle = client.create_entry(name="obj1", dtype=data.dtype, shape=data.shape, is_numpy=True)
-    # _, buffer_list = client.open_shm(handle)
-    # buffer_list[0][:] = data[:]
-    # _, idx = client.commit_entry(handle)
-    # print(f"idx {idx}")
-    #
-    # # read
-    # _, handle = client.open_entry(name="obj1", entry_idx=0)
-    # _, buffer_list = client.open_shm(handle)
-    # print(buffer_list[0])
-    # client.release_entry(handle)
-    #
-    # # another read
-    # status, object_handle, obj = client.read_from_object(name="obj1", entry_idx=0)
-    # print(status, obj)
-    # client.release_entry(object_handle)
-    #
-    # # yet another read
-    # status, object_handle, obj = client.pop_from_object(name="obj1")
-    # print(status, obj)
-    # client.free_handle(object_handle)
-    #
-    # # delete
-    # client.delete_entry(name="obj1", entry_idx=1)
+    # 4: fined-grained operation test
+    print("fined-grained test")
+
+    # write
+    data = np.random.randn(10)
+    client.create_object(name="obj1", max_capacity=2, track_count=1, block_size=512)
+    _, handle = client.create_entry(name="obj1", dtype=data.dtype, shape=data.shape, is_numpy=True)
+    _, buffer_list = client.open_shm(handle)
+    buffer_list[0][:] = data[:]
+    _, idx = client.commit_entry(handle)
+    print(f"idx {idx}")
+
+    # read
+    _, handle = client.open_entry(name="obj1", entry_idx=0)
+    _, buffer_list = client.open_shm(handle)
+    print(buffer_list[0])
+    client.release_entry(handle)
+
+    # another read
+    status, object_handle, obj = client.read_from_object(name="obj1", entry_idx=0)
+    print(status, obj)
+    client.release_entry(object_handle)
+
+    # yet another read
+    status, object_handle, obj = client.pop_from_object(name="obj1")
+    print(status, obj)
+    client.free_handle(object_handle)
+
+    # delete
+    client.delete_entry(name="obj1", entry_idx=1)
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    # 5: fined-grained operation
+    print("put and get")
 
     # clean up
     print("test finished")
