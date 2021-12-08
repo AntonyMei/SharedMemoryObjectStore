@@ -42,14 +42,14 @@ def main():
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # 2: queue API (push_to_object & pop_from_object  ->  free_handle)
-    client.create_object(name="obj1", max_capacity=4, track_count=3, block_size=[128, 130, 132])
-
-    client.push_to_object(name="obj1", data=[np.ones(5), np.ones(5), 234])
-    status, object_handle, obj = client.pop_from_object(name="obj1")
-    print(status, obj)
-    client.free_handle(object_handle)
-
-    client.remove_object(name="obj1")
+    # client.create_object(name="obj1", max_capacity=4, track_count=3, block_size=[128, 130, 132])
+    #
+    # client.push_to_object(name="obj1", data=[np.ones(5), np.ones(5), 234])
+    # status, object_handle, obj = client.pop_from_object(name="obj1")
+    # print(status, obj)
+    # client.free_handle(object_handle)
+    #
+    # client.remove_object(name="obj1")
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
