@@ -133,8 +133,22 @@ def main():
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    # 5: fined-grained operation
+    # 6: test put
     print("put and get")
+    data = [SMOS_utils.EntryConfig(1, (1, 2), False), 124, np.random.randn(10)]
+    client.put(name="obj1", data=data, as_list=False)
+    print("put finished")
+
+    # use pop to read
+    status, object_handle, obj = client.pop_from_object(name="obj1")
+    print(status, obj)
+    client.free_handle(object_handle)
+    status, object_handle, obj = client.pop_from_object(name="obj1")
+    print(status, obj)
+    client.free_handle(object_handle)
+    status, object_handle, obj = client.pop_from_object(name="obj1")
+    print(status, obj)
+    client.free_handle(object_handle)
 
     # clean up
     print("test finished")
