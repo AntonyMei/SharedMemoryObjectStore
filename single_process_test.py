@@ -160,7 +160,7 @@ def main():
     # 7: test get
     data = [124, np.random.randn(10), SMOS_utils.EntryConfig(1, (1, 2), False)]
     client.put(name="obj1", data=data)
-    print(client.get(name="obj1", entry_idx_list=[2]))
+    print(client.get(name="obj1"))
 
     # clean up
     print("test finished")

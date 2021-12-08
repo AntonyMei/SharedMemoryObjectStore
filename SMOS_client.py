@@ -166,7 +166,7 @@ class Client:
         """
         # determine query range
         if entry_idx_list is None:
-            entry_idx_list = self.store.get_entry_idx_list(name=name)
+            _, entry_idx_list = self.store.get_entry_idx_list(name=name)
 
         # read and reconstruct data from shared memory
         return_list = []
