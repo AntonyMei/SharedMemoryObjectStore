@@ -102,3 +102,7 @@ def main():
           f"Write: {data_size / max_time} GB/s\n"
           f"Throughput: {2 * data_size / max_time} GB/s")
     print(f"******************************************************************", flush=True)
+
+
+if __name__ == '__main__':
+    main()
