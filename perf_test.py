@@ -95,8 +95,10 @@ def main():
     print(f"***************************** Result *****************************", flush=True)
     print(f"[Perf upper bound]\n"
           f"Time: {pure_time}s\n"
+          f"Write: {data_size / pure_time} GB/s\n"
           f"Throughput: {2 * data_size / pure_time} GB/s")
     print(f"[Perf lower bound]\n"
           f"Time: {max_time}s\n"
+          f"Write: {data_size / max_time} GB/s\n"
           f"Throughput: {2 * data_size / max_time} GB/s")
     print(f"******************************************************************", flush=True)
