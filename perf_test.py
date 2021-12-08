@@ -42,6 +42,7 @@ def main():
     # start server and create object
     server = SMOS.Server()
     address = server.address()
+    server.start()
 
     # create object
     client = SMOS.Client(address)
@@ -67,6 +68,7 @@ def main():
     start_pure = time.time()
 
     end_pure = 0
+    timer_flag = False
     while True:
         time.sleep(10)
         alive_count = 0
@@ -76,8 +78,10 @@ def main():
         print(f"***************************** Alive workers: {alive_count} *****************************",
               flush=True)
         if alive_count < (reader_count + writer_count) / 2:
-            print(f"***************************** Pure timer ends *****************************", flush=True)
-            end_pure = time.time()
+            if not timer_flag:
+                print(f"***************************** Pure timer ends *****************************", flush=True)
+                end_pure = time.time()
+                timer_flag = True
         if alive_count == 0:
             print(f"***************************** Max timer starts *****************************", flush=True)
             end_max = time.time()
