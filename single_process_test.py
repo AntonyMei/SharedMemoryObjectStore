@@ -100,35 +100,38 @@ def main():
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # 5: fine-grained operation test for non-numpy
-    print("fined-grained test")
+    # print("fined-grained test")
+    #
+    # # write
+    # data = SMOS_utils.EntryConfig(1, (1, 2), False)
+    # client.create_object(name="obj1", max_capacity=2, track_count=1, block_size=512)
+    # _, handle = client.create_entry(name="obj1", dtype=None, shape=None, is_numpy=False)
+    # _, buffer_list = client.open_shm(handle)
+    # SMOS.serialize(obj=data, buf=buffer_list[0])
+    # _, idx = client.commit_entry(handle)
+    # print(f"idx {idx}")
+    #
+    # # read
+    # _, handle = client.open_entry(name="obj1", entry_idx=0)
+    # _, buffer_list = client.open_shm(handle)
+    # obj0 = SMOS.deserialize(buffer_list[0])
+    # print(obj0)
+    # client.release_entry(handle)
+    #
+    # # another read
+    # status, object_handle, obj1 = client.read_from_object(name="obj1", entry_idx=0)
+    # print(status, obj1)
+    # client.release_entry(object_handle)
+    #
+    # # yet another read
+    # status, object_handle, obj2 = client.pop_from_object(name="obj1")
+    # print(status, obj2)
+    # client.free_handle(object_handle)
+    #
+    # # delete
+    # client.delete_entry(name="obj1", entry_idx=0)
 
-    # write
-    data = SMOS_utils.EntryConfig(1, (1, 2), False)
-    client.create_object(name="obj1", max_capacity=2, track_count=1, block_size=512)
-    _, handle = client.create_entry(name="obj1", dtype=None, shape=None, is_numpy=False)
-    _, buffer_list = client.open_shm(handle)
-    SMOS.serialize(obj=data, buf=buffer_list[0])
-    _, idx = client.commit_entry(handle)
-    print(f"idx {idx}")
-
-    # read
-    _, handle = client.open_entry(name="obj1", entry_idx=0)
-    _, buffer_list = client.open_shm(handle)
-    print(buffer_list[0])
-    client.release_entry(handle)
-
-    # another read
-    status, object_handle, obj1 = client.read_from_object(name="obj1", entry_idx=0)
-    print(status, obj1)
-    client.release_entry(object_handle)
-
-    # yet another read
-    status, object_handle, obj2 = client.pop_from_object(name="obj1")
-    print(status, obj2)
-    client.free_handle(object_handle)
-
-    # delete
-    client.delete_entry(name="obj1", entry_idx=0)
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # 5: fined-grained operation
     print("put and get")
