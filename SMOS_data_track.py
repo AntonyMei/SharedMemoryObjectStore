@@ -180,7 +180,7 @@ class DataTrack:
             del self.entry_config_list[entry_idx]
             return SMOS_SUCCESS, entry_config
 
-        except KeyError or ValueError:
+        except ValueError:
             return SMOS_FAIL, None
 
     def free_block_mapping(self, entry_config: utils.EntryConfig):
