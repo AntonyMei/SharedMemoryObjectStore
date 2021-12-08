@@ -214,15 +214,15 @@ class Client:
         """
         # ensure that inputs are lists
         if not type(dtype) == list:
-            dtype_list = list(dtype)
+            dtype_list = [dtype]
         else:
             dtype_list = dtype
         if not type(shape) == list:
-            shape_list = list(shape)
+            shape_list = [shape]
         else:
             shape_list = shape
         if not type(is_numpy) == list:
-            is_numpy_list = list(is_numpy)
+            is_numpy_list = [is_numpy]
         else:
             is_numpy_list = is_numpy
 

@@ -66,6 +66,10 @@ def main():
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+    # fined grained operation test
+    print("fined-grained test")
+    client.create_entry(name="test1", dtype=np.float64, shape=(3, 0), is_numpy=True)
+
     # clean up
     print("test finished")
     server.stop()
