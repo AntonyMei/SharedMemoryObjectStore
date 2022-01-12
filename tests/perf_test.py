@@ -23,10 +23,10 @@ def writer(idx, address, name):
         status, _ = client.push_to_object(name=name, data=data)
         if status == SMOS.SMOS_SUCCESS:
             print(f"w {int(data[0])}", flush=True)
-            data[0] += 1
         else:
             print(f"[write fail ({idx})]", flush=True)
             time.sleep(1)
+        data[0] += 1
 
 
 def reader(idx, address, name):
