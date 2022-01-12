@@ -17,7 +17,9 @@ object_entry_count = 50 * 1024 * 1024
 
 
 def writer(idx, address, name):
+    print(f"[writer up w{idx}]", flush=True)
     client = SMOS.Client(connection=address)
+    print(f"[writer connected w{idx}]", flush=True)
     data = np.ones(object_entry_count) * object_count * idx
     for i in range(object_count):
         status, _ = client.push_to_object(name=name, data=data)
@@ -30,7 +32,9 @@ def writer(idx, address, name):
 
 
 def reader(idx, address, name):
+    print(f"[reader up r{idx}]", flush=True)
     client = SMOS.Client(connection=address)
+    print(f"[reader connected r{idx}]", flush=True)
     for i in range(object_count):
         status, handle, data = client.pop_from_object(name=name)
         if status == SMOS.SMOS_SUCCESS:
@@ -67,6 +71,7 @@ def main():
     start_max = time.time()
     for worker in writers + readers:
         worker.start()
+        time.sleep(0.1)
     print(f"***************************** Pure timer starts *****************************", flush=True)
     start_pure = time.time()
 
