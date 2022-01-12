@@ -22,9 +22,9 @@ def writer(idx, address, name):
     for i in range(object_count):
         status, _ = client.push_to_object(name=name, data=data)
         if status == SMOS.SMOS_SUCCESS:
-            print(f"w {int(data[0])}", flush=True)
+            print(f"w{idx} {int(data[0])}", flush=True)
         else:
-            print(f"[write fail ({idx})]", flush=True)
+            print(f"[write fail (w{idx})]", flush=True)
             time.sleep(1)
         data[0] += 1
 
@@ -34,10 +34,10 @@ def reader(idx, address, name):
     for i in range(object_count):
         status, handle, data = client.pop_from_object(name=name)
         if status == SMOS.SMOS_SUCCESS:
-            print(f"r {int(data[0])}", flush=True)
+            print(f"r{idx} {int(data[0])}", flush=True)
             client.free_handle(handle)
         else:
-            print(f"[read fail ({idx})]", flush=True)
+            print(f"[read fail (r{idx})]", flush=True)
             time.sleep(random.random() * 5)
 
 
@@ -74,12 +74,35 @@ def main():
     timer_flag = False
     while True:
         time.sleep(10)
-        alive_count = 0
-        for worker in writers + readers:
+
+        # check readers
+        reader_alive_count = 0
+        reader_alive_list = []
+        for idx in range(len(readers)):
+            worker = readers[idx]
             if worker.is_alive():
-                alive_count += 1
-        print(f"***************************** Alive workers: {alive_count} *****************************",
+                reader_alive_count += 1
+                reader_alive_list.append(idx)
+
+        # check writers
+        writer_alive_count = 0
+        writer_alive_list = []
+        for idx in range(len(writers)):
+            worker = writers[idx]
+            if worker.is_alive():
+                writer_alive_count += 1
+                writer_alive_list.append(idx)
+
+        # log alive workers
+        alive_count = reader_alive_count + writer_alive_count
+        print(f"***************************** Alive readers: {reader_alive_count} *****************************",
               flush=True)
+        print(reader_alive_list, flush=True)
+        print(f"***************************** Alive writers: {writer_alive_count} *****************************",
+              flush=True)
+        print(writer_alive_list, flush=True)
+
+        # timer
         if alive_count < (reader_count + writer_count) / 2:
             if not timer_flag:
                 print(f"***************************** Pure timer ends *****************************", flush=True)
