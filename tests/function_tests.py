@@ -4,14 +4,9 @@ This file contains function tests for Shared Memory Object Store
 """
 import time
 import numpy as np
-import SMOS_server
-import SMOS_utils
-import SMOS_data_track as dt
 import pickle
-import SMOS_exceptions
-import multiprocessing as mp
+from src import SMOS_exceptions, SMOS_utils
 from multiprocessing import shared_memory
-import io
 
 
 def put(data, as_list=False):

@@ -2,14 +2,8 @@
 2021.12.04 Yixuan Mei
 This file is used to test SMOS correctness in single process case.
 """
-import time
 
 import SMOS
-import numpy as np
-
-import multiprocessing.shared_memory as shared_memory
-
-import SMOS_utils
 
 
 class TestClass:
