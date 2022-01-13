@@ -4,6 +4,7 @@ This file is used to test SMOS correctness in single process case.
 """
 
 import SMOS
+import numpy as np
 
 
 class TestClass:
@@ -158,6 +159,22 @@ def main():
     # print(client.get(name="obj1"))
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    # 8: queue test 2
+    print("Queue test")
+    client.create_object(name="obj1", max_capacity=4, track_count=2, block_size=[512, 512])
+
+    # push
+    data = [np.ones(3), np.zeros(5)]
+    data = [np.ones(10), data]
+    client.push_to_object(name="obj1", data=data)
+
+    # pop
+    status, object_handle, obj = client.read_from_object(name="obj1", entry_idx=0)
+    print(status, obj)
+    client.release_entry(object_handle)
+
+    client.remove_object(name="obj1")
 
     # clean up
     print("test finished")
