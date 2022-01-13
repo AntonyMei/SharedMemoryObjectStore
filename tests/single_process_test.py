@@ -170,7 +170,7 @@ def main():
     client.push_to_object(name="obj1", data=data)
 
     # pop
-    status, object_handle, obj = client.read_from_object(name="obj1", entry_idx=0)
+    status, object_handle, obj = client.pop_from_object(name="obj1")
     print(status, obj)
     client.release_entry(object_handle)
 
