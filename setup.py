@@ -10,10 +10,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SMOS_antony",  # This is the name of the package
-    version="0.0.1",  # The initial release version
+    version="1.0.0",  # The initial release version
     author="Yixuan Mei",  # Full name of the author
     author_email="meiyx19@mails.tsinghua.edu.cn",
-    url="https://github.com/realpython/reader",
+    url="https://github.com/AntonyMei/SharedMemoryObjectStore",
     description="A fast shared memory object store.",
     long_description=long_description,  # Long description read from the the readme file
     long_description_content_type="text/markdown",
