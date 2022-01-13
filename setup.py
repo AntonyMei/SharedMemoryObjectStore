@@ -3,6 +3,8 @@ import setuptools
 # usage
 # python setup.py sdist bdist_wheel
 # pip install -e .
+# twine check dist/*
+# twine upload dist/*
 
 # readme
 with open("README.md", "r") as fh:
