@@ -7,6 +7,6 @@ import SMOS_exceptions
 import SMOS_utils
 
 from SMOS_constants import SMOS_SUCCESS, SMOS_FAIL, SMOS_PERMISSION_DENIED
-from SMOS_utils import ConnectionDescriptor
+from SMOS_utils import ConnectionDescriptor, serialize, deserialize
 from SMOS_server import Server
-from SMOS_client import Client, serialize, deserialize
+from SMOS_client import Client

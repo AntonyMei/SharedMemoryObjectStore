@@ -2,8 +2,10 @@
 2021.12.04 Yixuan Mei
 This file is used to test SMOS correctness in single process case.
 """
+import pickle
 
 import SMOS
+import SMOS_utils
 import numpy as np
 
 
@@ -162,16 +164,21 @@ def main():
 
     # 8: queue test 2
     print("Queue test")
-    client.create_object(name="obj1", max_capacity=4, track_count=2, block_size=[512, 512])
+    client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
 
     # push
-    data = [np.ones(3), np.zeros(5)]
-    data = [np.ones(10), data]
-    client.push_to_object(name="obj1", data=data)
+    data1 = [[123, 456, 789]]
+    client.push_to_object(name="obj1", data=[data1])
+    data2 = [[123123, 456, 789, 23]]
+    client.push_to_object(name="obj1", data=[data2])
 
     # pop
-    status, object_handle, obj = client.pop_from_object(name="obj1")
-    print(status, obj)
+    status, object_handle, obj1 = client.pop_from_object(name="obj1")
+    print(status, obj1)
+    client.release_entry(object_handle)
+
+    status, object_handle, obj2 = client.pop_from_object(name="obj1")
+    print(status, obj2)
     client.release_entry(object_handle)
 
     client.remove_object(name="obj1")
