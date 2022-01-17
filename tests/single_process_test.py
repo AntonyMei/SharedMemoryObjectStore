@@ -192,6 +192,11 @@ def main():
     # push
     data1 = np.array([[b'abc', b'bbc'], [b'cbc', b'dbc']])
     client.push_to_object(name="obj1", data=[data1])
+    data1 = np.array([[b'abc', b'bbc'], [b'cbc', b'dbc']])
+    client.push_to_object(name="obj1", data=[data1])
+    data1 = np.array([[b'abc', b'bbc'], [b'cbc', b'dbc']])
+    client.push_to_object(name="obj1", data=[data1])
+    print(client.get_entry_count("obj1"))
 
     # pop
     status, object_handle, obj1 = client.pop_from_object(name="obj1")

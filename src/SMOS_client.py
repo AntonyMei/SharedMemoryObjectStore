@@ -562,3 +562,13 @@ class Client:
         # commit entry and return
         _, entry_idx = self.commit_entry(object_handle=object_handle)
         return SMOS_SUCCESS, entry_idx
+
+    # utility functions
+    def get_entry_count(self, name):
+        """
+        Get number of entries in target SharedMemoryObject
+
+        :param name: name of target SharedMemoryObject
+        :return: always [SMOS_SUCCESS, entry_count]
+        """
+        return safe_execute(target=self.store.get_entry_count, args=(name,))

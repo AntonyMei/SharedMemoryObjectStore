@@ -353,6 +353,26 @@ class SharedMemoryObjectStore:
         # return
         return SMOS_SUCCESS, track_count
 
+    def get_entry_count(self, name):
+        """
+        Get entry count of target SharedMemoryObject
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :return: always [SMOS_SUCCESS, entry count]
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+        entry_count = len(self.object_dict[name].track_list[0].entry_config_list)
+        self.global_lock.reader_leave()
+
+        # return
+        return SMOS_SUCCESS, entry_count
+
     def profile(self):
         """
         Profiles SMOS usage.
