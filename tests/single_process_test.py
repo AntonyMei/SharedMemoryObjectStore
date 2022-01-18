@@ -190,19 +190,25 @@ def main():
     client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
 
     # push
-    data1 = np.array([[b'abc', b'bbc'], [b'cbc', b'dbc']])
-    client.push_to_object(name="obj1", data=[data1])
-    data1 = np.array([[b'abc', b'bbc'], [b'cbc', b'dbc']])
-    client.push_to_object(name="obj1", data=[data1])
-    data1 = np.array([[b'abc', b'bbc'], [b'cbc', b'dbc']])
-    client.push_to_object(name="obj1", data=[data1])
-    print(client.get_entry_count("obj1"))
+    data1 = np.array([[b'1', b'1'], [b'1', b'1']])
+    print(client.push_to_object(name="obj1", data=[data1]))
+    data1 = np.array([[b'222', b'222'], [b'222', b'222']])
+    print(client.push_to_object(name="obj1", data=[data1]))
+    data1 = np.array([[b'33', b'33'], [b'33', b'33']])
+    print(client.push_to_object(name="obj1", data=[data1]))
+    print(client.get_entry_count("obj1")[1])
 
     # pop
-    status, object_handle, obj1 = client.pop_from_object(name="obj1")
-    print(status, obj1)
-    print(obj1.dtype)
-    client.release_entry(object_handle)
+    _, handle1, data = client.read_from_object(name="obj1", entry_idx=0)
+    print(data)
+    _, handle2, data = client.read_from_object(name="obj1", entry_idx=1)
+    print(data)
+    _, handle3, data = client.read_from_object(name="obj1", entry_idx=2)
+    print(data)
+    client.release_entry(handle1)
+    client.release_entry(handle2)
+    client.release_entry(handle3)
+    print(client.delete_entry(name="obj1", entry_idx=1))
 
     # remove
     client.remove_object(name="obj1")
