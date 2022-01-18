@@ -140,6 +140,44 @@ class SharedMemoryObjectStore:
         # return
         return status, entry_config_list
 
+    def batch_read_entry_config(self, name, idx_batch):
+        """
+        Read entry configuration at given index form given SharedMemoryObject. This is
+        batched version that reduces interaction.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param idx_batch: indices of the batch of entries to be read
+        :return: [SMOS_SUCCESS, entry_config_list_batch] if successful,
+                 [SMOS_FAIL, None] if some of the target entries do not exist
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # query
+        entry_config_list_batch = []
+        batch_status = SMOS_SUCCESS
+        for idx in idx_batch:
+            status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx)
+            entry_config_list_batch.append(entry_config_list)
+            if not status == SMOS_SUCCESS:
+                batch_status = SMOS_FAIL
+                break
+
+        self.global_lock.reader_leave()
+
+        # return
+        if batch_status == SMOS_SUCCESS:
+            return SMOS_SUCCESS, entry_config_list_batch
+        else:
+            return SMOS_FAIL, None
+
     def release_read_reference(self, name, idx):
         """
         Release read reference on given entry from given SharedMemoryObject.
@@ -292,7 +330,7 @@ class SharedMemoryObjectStore:
         # return
         return SMOS_SUCCESS, shm_name_list
 
-    def get_entry_offset_list(self, name, entry_config_list: [utils.EntryConfig]):
+    def get_entry_offset(self, name, entry_config_list: [utils.EntryConfig]):
         """
         Get offset of each track for given entry in shared memory space.
 
@@ -312,6 +350,36 @@ class SharedMemoryObjectStore:
 
         # return
         return status, offset_list
+
+    def batch_get_entry_offset(self, name, entry_config_list_batch: [[utils.EntryConfig]]):
+        """
+        Get offset of each track for given entry in shared memory space. This is batched
+        version that reduces interaction.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param entry_config_list_batch: configurations of entry to be queried
+        :return: always [SMOS_SUCCESS, offset_list_batch]
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+
+        # check if object exists
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+
+        # query
+        offset_list_batch = []
+        for entry_config_list in entry_config_list_batch:
+            _, offset_list = self.object_dict[name].get_entry_offset(entry_config_list=entry_config_list)
+            offset_list_batch.append(offset_list)
+
+        self.global_lock.reader_leave()
+
+        # return
+        return SMOS_SUCCESS, offset_list_batch
 
     def get_entry_idx_list(self, name):
         """

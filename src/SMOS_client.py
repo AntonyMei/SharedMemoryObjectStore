@@ -3,7 +3,6 @@
 This file contains class Client, which should be instantiated in every process that uses SMOS.
 """
 
-import pickle
 from multiprocessing import shared_memory
 
 import numpy as np
@@ -292,7 +291,7 @@ class Client:
         :return: always [SMOS_SUCCESS, a list of shm.buf / shm backed numpy array]
         """
         # get offset and shared memory name
-        _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
+        _, offset_list = safe_execute(target=self.store.get_entry_offset,
                                       args=(object_handle.name, object_handle.entry_config_list,))
         _, block_size_list = safe_execute(target=self.store.get_block_size_list,
                                           args=(object_handle.name,))
@@ -405,7 +404,7 @@ class Client:
             return status, None, None
 
         # get shared memory info
-        _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
+        _, offset_list = safe_execute(target=self.store.get_entry_offset,
                                       args=(name, entry_config_list,))
         _, block_size_list = safe_execute(target=self.store.get_block_size_list, args=(name,))
         _, shm_name_list = safe_execute(target=self.store.get_shm_name_list, args=(name,))
@@ -456,7 +455,7 @@ class Client:
             return status, None, None
 
         # get shared memory info
-        _, offset_list = safe_execute(target=self.store.get_entry_offset_list,
+        _, offset_list = safe_execute(target=self.store.get_entry_offset,
                                       args=(name, entry_config_list,))
         _, block_size_list = safe_execute(target=self.store.get_block_size_list, args=(name,))
         _, shm_name_list = safe_execute(target=self.store.get_shm_name_list, args=(name,))
@@ -488,6 +487,67 @@ class Client:
             return SMOS_SUCCESS, object_handle, reconstructed_object[0]
         else:
             return SMOS_SUCCESS, object_handle, reconstructed_object
+
+    def batch_read_from_object(self, name, entry_idx_batch):
+        """
+        Read an entry from target SharedMemoryObject. This function reconstructs data
+        to what it was before being passed into SMOS. This is batched version that
+        reduces interaction.
+
+        :param name: name of the SharedMemoryObject
+        :param entry_idx_batch: indices of the batch of entries to be read
+        :return: [SMOS_SUCCESS, object_handle_batch, reconstructed_object_batch] if successful
+                 [SMOS_FAIL, None, None] if some entry does not exist in target SharedMemoryObject
+        """
+        # pop entry config
+        status, entry_config_list_batch = safe_execute(target=self.store.batch_read_entry_config,
+                                                       args=(name, entry_idx_batch,))
+
+        # check if we successfully get entry config
+        if not status == SMOS_SUCCESS:
+            return status, None, None
+
+        # get shared memory info
+        _, offset_list_batch = safe_execute(target=self.store.batch_get_entry_offset,
+                                            args=(name, entry_config_list_batch,))
+        _, block_size_list = safe_execute(target=self.store.get_block_size_list, args=(name,))
+        _, shm_name_list = safe_execute(target=self.store.get_shm_name_list, args=(name,))
+
+        # start reconstruction of batch
+        object_handle_batch, reconstructed_object_batch = [], []
+        for entry_config_list, offset_list, entry_idx in zip(entry_config_list_batch, offset_list_batch,
+                                                             entry_idx_batch):
+            # build object handle (partial build)
+            object_handle = utils.ObjectHandle()
+            object_handle.name = name
+            object_handle.entry_idx = entry_idx
+            object_handle.entry_config_list = entry_config_list
+
+            # reconstruct object
+            reconstructed_object = []
+            for track_idx in range(len(entry_config_list)):
+                shm = shared_memory.SharedMemory(name=shm_name_list[track_idx])
+                entry_config = entry_config_list[track_idx]
+                if entry_config.is_numpy:
+                    mm_array = np.ndarray(shape=entry_config.shape, dtype=entry_config.dtype,
+                                          buffer=shm.buf, offset=offset_list[track_idx])
+                    object_handle.shm_list.append(shm)
+                    reconstructed_object.append(mm_array)
+                else:
+                    buffer = shm.buf[offset_list[track_idx]: offset_list[track_idx] + block_size_list[track_idx]]
+                    deserialized_object = utils.deserialize(data_stream=buffer)
+                    buffer.release()
+                    reconstructed_object.append(deserialized_object)
+
+            # store in batch
+            object_handle_batch.append(object_handle)
+            if len(reconstructed_object) == 1:
+                reconstructed_object_batch.append(reconstructed_object[0])
+            else:
+                reconstructed_object_batch.append(reconstructed_object)
+
+        # return result
+        return SMOS_SUCCESS, object_handle_batch, reconstructed_object_batch
 
     def free_handle(self, object_handle: utils.ObjectHandle):
         """

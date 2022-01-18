@@ -198,17 +198,28 @@ def main():
     print(client.push_to_object(name="obj1", data=[data1]))
     print(client.get_entry_count("obj1")[1])
 
-    # pop
-    _, handle1, data = client.read_from_object(name="obj1", entry_idx=0)
-    print(data)
-    _, handle2, data = client.read_from_object(name="obj1", entry_idx=1)
-    print(data)
-    _, handle3, data = client.read_from_object(name="obj1", entry_idx=2)
-    print(data)
-    client.release_entry(handle1)
-    client.release_entry(handle2)
-    client.release_entry(handle3)
+    # read batch
+    status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[0, 1, 2])
+    if status == SMOS.SMOS_SUCCESS:
+        print(data_batch)
+        for handle, data in zip(handle_batch, data_batch):
+            print(data)
+            client.release_entry(object_handle=handle)
+    else:
+        print("read failed")
+
+    # delete
     print(client.delete_entry(name="obj1", entry_idx=1))
+
+    # read batch
+    status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[1, 2])
+    if status == SMOS.SMOS_SUCCESS:
+        print(data_batch)
+        for handle, data in zip(handle_batch, data_batch):
+            print(data)
+            client.free_handle(object_handle=handle)
+    else:
+        print("read failed as expected")
 
     # remove
     client.remove_object(name="obj1")
