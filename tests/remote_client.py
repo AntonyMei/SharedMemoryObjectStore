@@ -5,9 +5,10 @@ import SMOS_utils
 
 
 def main():
-    connection = SMOS_utils.ConnectionDescriptor(ip="localhost", port=5000, authkey=b'antony')
+    connection = SMOS_utils.ConnectionDescriptor(ip="192.168.3.6", port=5000, authkey=b'antony')
     print(connection.ip, connection.port)
     client = SMOS.Client(connection)
+    print("client connected")
     while True:
         status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[0])
         if status == SMOS.SMOS_SUCCESS:
