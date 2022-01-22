@@ -6,7 +6,7 @@ import SMOS_utils
 
 def main():
     # server
-    connection = SMOS_utils.ConnectionDescriptor(ip="192.168.3.6", port=5000, authkey=b'antony')
+    connection = SMOS_utils.ConnectionDescriptor(ip="10.200.13.18", port=5000, authkey=b'antony')
     server = SMOS.Server(connection)
     server_address = server.address()
     server.start()

@@ -5,7 +5,7 @@ import SMOS_utils
 
 
 def main():
-    connection = SMOS_utils.ConnectionDescriptor(ip="192.168.3.6", port=5000, authkey=b'antony')
+    connection = SMOS_utils.ConnectionDescriptor(ip="10.200.13.18", port=5000, authkey=b'antony')
     print(connection.ip, connection.port)
     client = SMOS.Client(connection)
     print("client connected")
