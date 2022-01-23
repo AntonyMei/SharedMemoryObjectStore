@@ -154,6 +154,38 @@ class SharedMemoryObject:
         else:
             return SMOS_FAIL, None
 
+    def read_latest_entry_config(self):
+        """
+        Read entry config of latest entry and add read reference to that entry.
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks return
+                   value error while others do not
+
+        :return: [SMOS_SUCCESS, entry_idx, entry_config_list] if successful,
+                 [SMOS_FAIL, None, None] if current SharedMemoryObject is empty
+        """
+        # read entry config
+        status_list = []
+        entry_idx_list = []
+        entry_config_list = []
+        self.lock.reader_enter()
+        for track in self.track_list:
+            status, entry_idx, entry_config = track.read_latest_entry_config()
+            status_list.append(status)
+            entry_idx_list.append(entry_idx)
+            entry_config_list.append(entry_config)
+        self.lock.reader_leave()
+
+        # check data integrity
+        if not len(set(status_list)) == 1 or not len(set(entry_idx_list)) == 1:
+            raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+
+        # return
+        if status_list[0] == SMOS_SUCCESS:
+            return SMOS_SUCCESS, entry_idx_list[0], entry_config_list
+        else:
+            return SMOS_FAIL, None, None
+
     def release_read_reference(self, idx):
         """
         Release read reference on given entry

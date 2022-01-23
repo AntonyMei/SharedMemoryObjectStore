@@ -98,6 +98,25 @@ class DataTrack:
         except KeyError:
             return SMOS_FAIL, None
 
+    def read_latest_entry_config(self):
+        """
+        Read entry config of latest entry and add read reference to that entry.
+
+        :return: [SMOS_SUCCESS, entry_idx, entry_config] if successful,
+                 [SMOS_FAIL, None, None] if current track is empty
+        """
+        try:
+            # get latest idx
+            idx = max(list(self.entry_config_list.keys()))
+
+            # get entry config
+            self.entry_config_list[idx].pending_readers += 1
+            entry_config = self.entry_config_list[idx]
+            return SMOS_SUCCESS, idx, entry_config
+
+        except ValueError:
+            return SMOS_FAIL, None
+
     def release_read_reference(self, idx):
         """
         Release read reference on given entry.

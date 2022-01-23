@@ -140,6 +140,27 @@ class SharedMemoryObjectStore:
         # return
         return status, entry_config_list
 
+    def read_latest_entry_config(self, name):
+        """
+        Read entry configuration of latest entry form given SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :return: [SMOS_SUCCESS, entry_idx, entry_config_list] if successful,
+                 [SMOS_FAIL, None, None] if target SharedMemoryObject is empty
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+        status, entry_idx, entry_config_list = self.object_dict[name].read_latest_entry_config()
+        self.global_lock.reader_leave()
+
+        # return
+        return status, entry_idx, entry_config_list
+
     def batch_read_entry_config(self, name, idx_batch):
         """
         Read entry configuration at given index form given SharedMemoryObject. This is
