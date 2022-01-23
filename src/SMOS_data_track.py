@@ -115,7 +115,7 @@ class DataTrack:
             return SMOS_SUCCESS, idx, entry_config
 
         except ValueError:
-            return SMOS_FAIL, None
+            return SMOS_FAIL, None, None
 
     def release_read_reference(self, idx):
         """
