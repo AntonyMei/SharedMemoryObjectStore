@@ -186,40 +186,90 @@ def main():
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
     # 8: queue test 3
-    print("Queue test")
+    # print("Queue test")
+    # client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
+    #
+    # # push
+    # data1 = np.array([[b'1', b'1'], [b'1', b'1']])
+    # print(client.push_to_object(name="obj1", data=[data1]))
+    # data1 = np.array([[b'222', b'222'], [b'222', b'222']])
+    # print(client.push_to_object(name="obj1", data=[data1]))
+    # data1 = np.array([[b'33', b'33'], [b'33', b'33']])
+    # print(client.push_to_object(name="obj1", data=[data1]))
+    # print(client.get_entry_count("obj1")[1])
+    #
+    # # read batch
+    # status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[0, 1, 2])
+    # if status == SMOS.SMOS_SUCCESS:
+    #     print(data_batch)
+    #     for handle, data in zip(handle_batch, data_batch):
+    #         print(data)
+    #         client.release_entry(object_handle=handle)
+    # else:
+    #     print("read failed")
+    #
+    # # delete
+    # print(client.delete_entry(name="obj1", entry_idx=1))
+    #
+    # # read batch
+    # status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[1, 2])
+    # if status == SMOS.SMOS_SUCCESS:
+    #     print(data_batch)
+    #     for handle, data in zip(handle_batch, data_batch):
+    #         print(data)
+    #         client.free_handle(object_handle=handle)
+    # else:
+    #     print("read failed as expected")
+    #
+    # # remove
+    # client.remove_object(name="obj1")
+
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    print("Read latest test")
     client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
 
-    # push
-    data1 = np.array([[b'1', b'1'], [b'1', b'1']])
-    print(client.push_to_object(name="obj1", data=[data1]))
-    data1 = np.array([[b'222', b'222'], [b'222', b'222']])
-    print(client.push_to_object(name="obj1", data=[data1]))
-    data1 = np.array([[b'33', b'33'], [b'33', b'33']])
-    print(client.push_to_object(name="obj1", data=[data1]))
-    print(client.get_entry_count("obj1")[1])
+    # read from empty
+    print(client.read_latest_from_object(name="obj1"))
 
-    # read batch
-    status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[0, 1, 2])
-    if status == SMOS.SMOS_SUCCESS:
-        print(data_batch)
-        for handle, data in zip(handle_batch, data_batch):
-            print(data)
-            client.release_entry(object_handle=handle)
-    else:
-        print("read failed")
+    # push 1
+    print(client.push_to_object(name="obj1", data=[1]))
+    print(client.push_to_object(name="obj1", data=[2]))
+    print(client.push_to_object(name="obj1", data=[3]))
+
+    # read
+    status, handle, data = client.read_latest_from_object(name="obj1")
+    print(data)
+    client.release_entry(object_handle=handle)
+
+    # push 2
+    print(client.push_to_object(name="obj1", data=[4]))
+
+    # read
+    status, handle, data = client.read_latest_from_object(name="obj1")
+    print(data)
+    client.release_entry(object_handle=handle)
 
     # delete
     print(client.delete_entry(name="obj1", entry_idx=1))
 
-    # read batch
-    status, handle_batch, data_batch = client.batch_read_from_object(name="obj1", entry_idx_batch=[1, 2])
-    if status == SMOS.SMOS_SUCCESS:
-        print(data_batch)
-        for handle, data in zip(handle_batch, data_batch):
-            print(data)
-            client.free_handle(object_handle=handle)
-    else:
-        print("read failed as expected")
+    # read
+    status, handle, data = client.read_latest_from_object(name="obj1")
+    print(data)
+    client.release_entry(object_handle=handle)
+
+    # delete
+    print(client.delete_entry(name="obj1", entry_idx=3))
+
+    # read
+    status, handle, data = client.read_latest_from_object(name="obj1")
+    print(data)
+    client.release_entry(object_handle=handle)
+
+    print(client.push_to_object(name="obj1", data=[-10]))
+    status, handle, data = client.read_latest_from_object(name="obj1")
+    print(data)
+    client.release_entry(object_handle=handle)
 
     # remove
     client.remove_object(name="obj1")
