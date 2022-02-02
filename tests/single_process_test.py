@@ -226,50 +226,71 @@ def main():
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+    # print("Read latest test")
+    # client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
+    #
+    # # read from empty
+    # print(client.read_latest_from_object(name="obj1"))
+    #
+    # # push 1
+    # print(client.push_to_object(name="obj1", data=[1]))
+    # print(client.push_to_object(name="obj1", data=[2]))
+    # print(client.push_to_object(name="obj1", data=[3]))
+    #
+    # # read
+    # status, handle, data = client.read_latest_from_object(name="obj1")
+    # print(data)
+    # client.release_entry(object_handle=handle)
+    #
+    # # push 2
+    # print(client.push_to_object(name="obj1", data=[4]))
+    #
+    # # read
+    # status, handle, data = client.read_latest_from_object(name="obj1")
+    # print(data)
+    # client.release_entry(object_handle=handle)
+    #
+    # # delete
+    # print(client.delete_entry(name="obj1", entry_idx=1))
+    #
+    # # read
+    # status, handle, data = client.read_latest_from_object(name="obj1")
+    # print(data)
+    # client.release_entry(object_handle=handle)
+    #
+    # # delete
+    # print(client.delete_entry(name="obj1", entry_idx=3))
+    #
+    # # read
+    # status, handle, data = client.read_latest_from_object(name="obj1")
+    # print(data)
+    # client.release_entry(object_handle=handle)
+    #
+    # print(client.push_to_object(name="obj1", data=[-10]))
+    # status, handle, data = client.read_latest_from_object(name="obj1")
+    # print(data)
+    # client.release_entry(object_handle=handle)
+    #
+    # # remove
+    # client.remove_object(name="obj1")
+
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
     print("Read latest test")
     client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
 
-    # read from empty
-    print(client.read_latest_from_object(name="obj1"))
-
     # push 1
-    print(client.push_to_object(name="obj1", data=[1]))
-    print(client.push_to_object(name="obj1", data=[2]))
-    print(client.push_to_object(name="obj1", data=[3]))
+    client.push_to_object(name="obj1", data=[1])
+    client.push_to_object(name="obj1", data=[2])
+    client.push_to_object(name="obj1", data=[3])
 
     # read
-    status, handle, data = client.read_latest_from_object(name="obj1")
-    print(data)
-    client.release_entry(object_handle=handle)
-
-    # push 2
-    print(client.push_to_object(name="obj1", data=[4]))
-
-    # read
-    status, handle, data = client.read_latest_from_object(name="obj1")
-    print(data)
-    client.release_entry(object_handle=handle)
-
-    # delete
-    print(client.delete_entry(name="obj1", entry_idx=1))
-
-    # read
-    status, handle, data = client.read_latest_from_object(name="obj1")
-    print(data)
-    client.release_entry(object_handle=handle)
-
-    # delete
-    print(client.delete_entry(name="obj1", entry_idx=3))
-
-    # read
-    status, handle, data = client.read_latest_from_object(name="obj1")
-    print(data)
-    client.release_entry(object_handle=handle)
-
-    print(client.push_to_object(name="obj1", data=[-10]))
-    status, handle, data = client.read_latest_from_object(name="obj1")
-    print(data)
-    client.release_entry(object_handle=handle)
+    status, handle1, data1 = client.read_latest_from_object(name="obj1")
+    status, handle2, data2 = client.read_latest_from_object(name="obj1")
+    print(data1, data2)
+    client.release_entry(object_handle=handle1)
+    client.push_to_object(name="obj1", data=[3])
+    client.release_entry(object_handle=handle2)
 
     # remove
     client.remove_object(name="obj1")
