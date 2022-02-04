@@ -92,7 +92,7 @@ class DataTrack:
                  [SMOS_FAIL, None] if target entry does not exist
         """
         try:
-            self.entry_config_list[idx].pending_readers += 1
+            self.entry_config_list[idx].pending_reader_list.append("+")
             entry_config = self.entry_config_list[idx]
             return SMOS_SUCCESS, entry_config
         except KeyError:
@@ -110,7 +110,7 @@ class DataTrack:
             idx = max(list(self.entry_config_list.keys()))
 
             # get entry config
-            self.entry_config_list[idx].pending_readers += 1
+            self.entry_config_list[idx].pending_reader_list.append("+")
             entry_config = self.entry_config_list[idx]
             return SMOS_SUCCESS, idx, entry_config
 
@@ -129,13 +129,13 @@ class DataTrack:
                  SMOS_FAIL if target entry does not exist
         """
         try:
-            self.entry_config_list[idx].pending_readers -= 1
-            if self.entry_config_list[idx].pending_readers < 0:
-                raise SMOS_exceptions.SMOSReadRefDoubleRelease(f"Double release on track {self.track_name}"
-                                                               f"index {idx}")
+            self.entry_config_list[idx].pending_reader_list.pop()
             return SMOS_SUCCESS
         except KeyError:
             return SMOS_FAIL
+        except IndexError:
+            raise SMOS_exceptions.SMOSReadRefDoubleRelease(f"Double release on track {self.track_name} "
+                                                           f"index {idx}")
 
     # delete
     def delete_entry_config(self, idx, force_delete=False):
@@ -154,7 +154,7 @@ class DataTrack:
         """
         try:
             # check delete permission
-            delete_permission = (self.entry_config_list[idx].pending_readers == 0)
+            delete_permission = (len(self.entry_config_list[idx].pending_reader_list) == 0)
             if not delete_permission and not force_delete:
                 return SMOS_PERMISSION_DENIED
 
@@ -189,7 +189,7 @@ class DataTrack:
             entry_idx = min(list(self.entry_config_list.keys()))
 
             # check permission
-            pop_permission = (self.entry_config_list[entry_idx].pending_readers == 0)
+            pop_permission = (len(self.entry_config_list[entry_idx].pending_reader_list) == 0)
             if not pop_permission and not force_pop:
                 return SMOS_PERMISSION_DENIED, None
 

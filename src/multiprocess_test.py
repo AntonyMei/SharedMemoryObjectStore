@@ -5,21 +5,26 @@ This file requires SMOS_antony package.
 import multiprocessing as mp
 import time
 
+import SMOS_exceptions
+
 import SMOS
 
 writer_count = 8
-total = 16 * 1024 ** 2
+total = 8 * 1024 ** 2
 
 
 def writer(idx, address):
     count = 0
     smos_client = SMOS.Client(address)
     while True:
-        _, sync_handle, cur_rank = smos_client.read_latest_from_object(name="sync")
-        smos_client.release_entry(object_handle=sync_handle)
-        smos_client.push_to_object(name="sync", data=1 - cur_rank)
+        _, sync_handle, data = smos_client.read_latest_from_object(name="sync")
+        try:
+            smos_client.release_entry(object_handle=sync_handle)
+        except SMOS_exceptions.SMOSReadRefDoubleRelease:
+            print(f"{sync_handle.entry_idx} {idx}******************* {data}")
+            raise TypeError
         count += 1
-        time.sleep(0.001)
+        smos_client.push_to_object(name="sync", data=f"{count} {idx}")
         if count % 1000 == 0:
             print(f"Worker [{idx}] active {count}")
         if count == total / writer_count - 100:

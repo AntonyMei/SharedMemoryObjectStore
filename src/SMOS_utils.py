@@ -36,7 +36,7 @@ class EntryConfig:
         # management
         self.track_name = track_name
         self.mapped_block_idx = mapped_block_idx
-        self.pending_readers = 0
+        self.pending_reader_list = []
 
 
 class RWLock:
