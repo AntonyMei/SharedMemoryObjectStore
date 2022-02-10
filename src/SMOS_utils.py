@@ -38,6 +38,14 @@ class EntryConfig:
         self.mapped_block_idx = mapped_block_idx
         self.pending_reader_list = []
 
+    def get_value(self):
+        """
+        This only returns necessary information (i.e. it ignores pending_reader_list which is
+        not used by users)
+        """
+        return EntryConfig(dtype=self.dtype, shape=self.shape, is_numpy=self.is_numpy,
+                           track_name=self.track_name, mapped_block_idx=self.mapped_block_idx)
+
 
 class RWLock:
 

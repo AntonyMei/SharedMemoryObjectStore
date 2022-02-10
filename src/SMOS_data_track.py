@@ -93,7 +93,7 @@ class DataTrack:
         """
         try:
             self.entry_config_list[idx].pending_reader_list.append("+")
-            entry_config = self.entry_config_list[idx]
+            entry_config = self.entry_config_list[idx].get_value()
             return SMOS_SUCCESS, entry_config
         except KeyError:
             return SMOS_FAIL, None
@@ -111,7 +111,7 @@ class DataTrack:
 
             # get entry config
             self.entry_config_list[idx].pending_reader_list.append("+")
-            entry_config = self.entry_config_list[idx]
+            entry_config = self.entry_config_list[idx].get_value()
             return SMOS_SUCCESS, idx, entry_config
 
         except ValueError:
@@ -194,7 +194,7 @@ class DataTrack:
                 return SMOS_PERMISSION_DENIED, None
 
             # pop entry config
-            entry_config = self.entry_config_list[entry_idx]
+            entry_config = self.entry_config_list[entry_idx].get_value()
             del self.entry_config_list[entry_idx]
             return SMOS_SUCCESS, entry_config
 
