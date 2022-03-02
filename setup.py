@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="SMOS_antony",  # This is the name of the package
-    version="1.3.2",  # major(incompatible API change).minor(new functions).patch(bug fix)
+    version="1.3.3",  # major(incompatible API change).minor(new functions).patch(bug fix)
     author="Yixuan Mei",  # Full name of the author
     author_email="meiyx19@mails.tsinghua.edu.cn",
     url="https://github.com/AntonyMei/SharedMemoryObjectStore",
