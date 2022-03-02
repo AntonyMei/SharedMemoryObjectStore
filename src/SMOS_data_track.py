@@ -162,12 +162,8 @@ class DataTrack:
             entry_config = self.entry_config_list[idx]
             block_idx = entry_config.mapped_block_idx
             del self.entry_config_list[idx]
-            if block_idx in self.free_block_list.queue:
-                raise SMOS_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
-                                                             f"freed in data track {self.track_name}.")
-            else:
-                self.free_block_list.put(block_idx)
-                return SMOS_SUCCESS
+            self.free_block_list.put(block_idx)
+            return SMOS_SUCCESS
 
         except KeyError:
             return SMOS_FAIL
@@ -221,12 +217,8 @@ class DataTrack:
 
         # free block mapping
         block_idx = entry_config.mapped_block_idx
-        if block_idx in self.free_block_list.queue:
-            raise SMOS_exceptions.SMOSBlockDoubleRelease(f"Block {block_idx} has already been"
-                                                         f"freed in data track {self.track_name}.")
-        else:
-            self.free_block_list.put(block_idx)
-            return SMOS_SUCCESS
+        self.free_block_list.put(block_idx)
+        return SMOS_SUCCESS
 
     # stop track for clean up
     def stop(self):
