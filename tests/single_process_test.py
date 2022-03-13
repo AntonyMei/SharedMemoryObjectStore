@@ -297,19 +297,47 @@ def main():
 
     """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-    print("Read latest test")
-    client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
+    # print("Read latest test")
+    # client.create_object(name="obj1", max_capacity=4, track_count=1, block_size=128)
+    #
+    # # push 1
+    # client.push_to_object(name="obj1", data=[1])
+    #
+    # # read
+    # status, handle1, data1 = client.read_latest_from_object(name="obj1")
+    # status, handle2, data2 = client.read_from_object(name="obj1", entry_idx=0)
+    # print(data1, data2)
+    # client.release_entry(object_handle=handle1)
+    # client.release_entry(object_handle=handle2)
+    # print(client.delete_entry(name="obj1", entry_idx=0))
+    #
+    # # remove
+    # client.remove_object(name="obj1")
+
+    """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+    print("Batch read test")
+    client.create_object(name="obj1", max_capacity=8, track_count=1, block_size=128)
 
     # push 1
+    client.push_to_object(name="obj1", data=[0])
     client.push_to_object(name="obj1", data=[1])
+    client.push_to_object(name="obj1", data=[2])
+    client.push_to_object(name="obj1", data=[3])
 
     # read
-    status, handle1, data1 = client.read_latest_from_object(name="obj1")
-    status, handle2, data2 = client.read_from_object(name="obj1", entry_idx=0)
-    print(data1, data2)
-    client.release_entry(object_handle=handle1)
-    client.release_entry(object_handle=handle2)
-    print(client.delete_entry(name="obj1", entry_idx=0))
+    status, handle_list, data_list = client.batch_read_from_object(name="obj1", entry_idx_batch=[0, 1, 3])
+    print(data_list)
+    for handle in handle_list:
+        client.release_entry(object_handle=handle)
+    delete_status = client.delete_entry(name="obj1", entry_idx=1) == SMOS.SMOS_SUCCESS
+    print(f"Delete succeed: {delete_status}")
+
+    # read again
+    status, handle_list, data_list = client.batch_read_from_object(name="obj1", entry_idx_batch=[0, 1, 3])
+    print(f"Read again succeed: {status == SMOS.SMOS_SUCCESS}")
+    delete_status = client.delete_entry(name="obj1", entry_idx=0) == SMOS.SMOS_SUCCESS
+    print(f"Delete succeed: {delete_status}")
 
     # remove
     client.remove_object(name="obj1")

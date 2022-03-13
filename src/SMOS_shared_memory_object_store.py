@@ -186,10 +186,13 @@ class SharedMemoryObjectStore:
         batch_status = SMOS_SUCCESS
         for idx in idx_batch:
             status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx)
-            entry_config_list_batch.append(entry_config_list)
             if not status == SMOS_SUCCESS:
+                # remove invalid read references
+                for success_idx in range(len(entry_config_list_batch)):
+                    self.object_dict[name].release_read_reference(idx=idx_batch[success_idx])
                 batch_status = SMOS_FAIL
                 break
+            entry_config_list_batch.append(entry_config_list)
 
         self.global_lock.reader_leave()
 
