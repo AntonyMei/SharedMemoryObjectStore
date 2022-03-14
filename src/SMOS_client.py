@@ -340,7 +340,7 @@ class Client:
         # return
         return SMOS_SUCCESS, entry_idx
 
-    def release_entry(self, object_handle: utils.ObjectHandle):
+    def release_entry(self, object_handle: utils.ObjectHandle, token="Unknown"):
         """
         Release read reference to target entry when reading is finished. Note that
         after this operation, object_handle is destroyed.
@@ -351,7 +351,7 @@ class Client:
         """
         # release read reference
         status = safe_execute(target=self.store.release_read_reference,
-                              args=(object_handle.name, object_handle.entry_idx,))
+                              args=(object_handle.name, object_handle.entry_idx, token))
 
         # clean up
         if status == SMOS_SUCCESS:
@@ -541,7 +541,7 @@ class Client:
         else:
             return SMOS_SUCCESS, object_handle, reconstructed_object
 
-    def batch_read_from_object(self, name, entry_idx_batch):
+    def batch_read_from_object(self, name, entry_idx_batch, token="Unknown"):
         """
         Read an entry from target SharedMemoryObject. This function reconstructs data
         to what it was before being passed into SMOS. This is batched version that
@@ -554,7 +554,7 @@ class Client:
         """
         # pop entry config
         status, entry_config_list_batch = safe_execute(target=self.store.batch_read_entry_config,
-                                                       args=(name, entry_idx_batch,))
+                                                       args=(name, entry_idx_batch, token, ))
 
         # check if we successfully get entry config
         if not status == SMOS_SUCCESS:

@@ -2,6 +2,7 @@
 2021.11.29 Yixuan Mei
 This file contains class SharedMemoryObject, which is basic component of SMOS.
 """
+import SMOS_constants
 
 import SMOS_exceptions
 import SMOS_utils as utils
@@ -123,7 +124,7 @@ class SharedMemoryObject:
         return SMOS_SUCCESS, entry_idx_list[0]
 
     # read
-    def read_entry_config(self, idx):
+    def read_entry_config(self, idx, token="Unknown"):
         """
         Read entry config at given index and add read reference to that entry.
 
@@ -139,7 +140,7 @@ class SharedMemoryObject:
         entry_config_list = []
         self.lock.reader_enter()
         for track in self.track_list:
-            status, entry_config = track.read_entry_config(idx=idx)
+            status, entry_config = track.read_entry_config(idx=idx, token=token)
             status_list.append(status)
             entry_config_list.append(entry_config)
         self.lock.reader_leave()
@@ -186,7 +187,7 @@ class SharedMemoryObject:
         else:
             return SMOS_FAIL, None, None
 
-    def release_read_reference(self, idx):
+    def release_read_reference(self, idx, token="Unknown"):
         """
         Release read reference on given entry
 
@@ -201,7 +202,7 @@ class SharedMemoryObject:
         status_list = []
         self.lock.reader_enter()
         for track in self.track_list:
-            status = track.release_read_reference(idx=idx)
+            status = track.release_read_reference(idx=idx, token=token)
             status_list.append(status)
         self.lock.reader_leave()
 
@@ -236,6 +237,10 @@ class SharedMemoryObject:
         # check integrity and return
         if not len(set(status_list)) == 1:
             raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+        if not status_list[0] == SMOS_SUCCESS:
+            print(f"idx: {idx}, permission denied: {status_list[0] == SMOS_constants.SMOS_PERMISSION_DENIED}")
+            print(f"idx: {idx}, enter {self.track_list[0].entry_config_list[idx].read_history},"
+                  f" leave {self.track_list[0].entry_config_list[idx].leave_history}")
         return status_list[0]
 
     # pop and free

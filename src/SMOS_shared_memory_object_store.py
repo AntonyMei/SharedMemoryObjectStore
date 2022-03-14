@@ -161,7 +161,7 @@ class SharedMemoryObjectStore:
         # return
         return status, entry_idx, entry_config_list
 
-    def batch_read_entry_config(self, name, idx_batch):
+    def batch_read_entry_config(self, name, idx_batch, token="Unknown"):
         """
         Read entry configuration at given index form given SharedMemoryObject. This is
         batched version that reduces interaction.
@@ -185,11 +185,11 @@ class SharedMemoryObjectStore:
         entry_config_list_batch = []
         batch_status = SMOS_SUCCESS
         for idx in idx_batch:
-            status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx)
+            status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx, token=token)
             if not status == SMOS_SUCCESS:
                 # remove invalid read references
                 for success_idx in range(len(entry_config_list_batch)):
-                    self.object_dict[name].release_read_reference(idx=idx_batch[success_idx])
+                    self.object_dict[name].release_read_reference(idx=idx_batch[success_idx], token=token+"failed")
                 batch_status = SMOS_FAIL
                 break
             entry_config_list_batch.append(entry_config_list)
@@ -202,7 +202,7 @@ class SharedMemoryObjectStore:
         else:
             return SMOS_FAIL, None
 
-    def release_read_reference(self, name, idx):
+    def release_read_reference(self, name, idx, token="Unknown"):
         """
         Release read reference on given entry from given SharedMemoryObject.
 
@@ -218,7 +218,7 @@ class SharedMemoryObjectStore:
         self.global_lock.reader_enter()
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-        status = self.object_dict[name].release_read_reference(idx=idx)
+        status = self.object_dict[name].release_read_reference(idx=idx, token=token)
         self.global_lock.reader_leave()
 
         # return

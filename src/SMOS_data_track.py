@@ -83,7 +83,7 @@ class DataTrack:
         return SMOS_SUCCESS, self.next_key - 1
 
     # read
-    def read_entry_config(self, idx):
+    def read_entry_config(self, idx, token='Unknown'):
         """
         Read entry config at given index and add read reference to that entry.
 
@@ -93,6 +93,7 @@ class DataTrack:
         """
         try:
             self.entry_config_list[idx].pending_reader_list.append("+")
+            self.entry_config_list[idx].read_history.append(token)
             entry_config = self.entry_config_list[idx].get_value()
             return SMOS_SUCCESS, entry_config
         except KeyError:
@@ -117,7 +118,7 @@ class DataTrack:
         except ValueError:
             return SMOS_FAIL, None, None
 
-    def release_read_reference(self, idx):
+    def release_read_reference(self, idx, token='Unknown'):
         """
         Release read reference on given entry.
 
@@ -130,6 +131,7 @@ class DataTrack:
         """
         try:
             self.entry_config_list[idx].pending_reader_list.pop()
+            self.entry_config_list[idx].leave_history.append(token)
             return SMOS_SUCCESS
         except KeyError:
             return SMOS_FAIL
@@ -156,6 +158,8 @@ class DataTrack:
             # check delete permission
             delete_permission = (len(self.entry_config_list[idx].pending_reader_list) == 0)
             if not delete_permission and not force_delete:
+                # print(f"idx: {idx}, enter {self.entry_config_list[idx].read_history},"
+                #       f" leave {self.entry_config_list[idx].leave_history}")
                 return SMOS_PERMISSION_DENIED
 
             # delete entry config and free
