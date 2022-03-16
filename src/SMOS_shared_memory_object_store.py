@@ -224,6 +224,30 @@ class SharedMemoryObjectStore:
         # return
         return status
 
+    def batch_release_read_reference(self, name, idx_batch):
+        """
+        Release read reference on a batch of entries from same SharedMemoryObject. This is
+        batched version that reduces interaction.
+
+        :exception SMOS_exceptions.SMOSObjectNotFoundError: if target SharedMemoryObject
+                   does not exist
+
+        :param name: name of the SharedMemoryObject
+        :param idx_batch: batch of indices of entries to be released
+        :return: a list of statuses, one for each idx
+                 SMOS_SUCCESS if successful,
+                 SMOS_FAIL if target entry does not exist
+        """
+        # query target SharedMemoryObject
+        self.global_lock.reader_enter()
+        if name not in self.object_dict:
+            raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
+        status = self.object_dict[name].batch_release_read_reference(idx_batch=idx_batch)
+        self.global_lock.reader_leave()
+
+        # return
+        return status
+
     # delete
     def delete_entry_config(self, name, idx, force_delete=False):
         """

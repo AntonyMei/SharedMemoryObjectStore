@@ -188,7 +188,7 @@ class SharedMemoryObject:
 
     def release_read_reference(self, idx):
         """
-        Release read reference on given entry
+        Release read reference on given entry.
 
         :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks return
                    index out of range while others do not
@@ -209,6 +209,35 @@ class SharedMemoryObject:
         if not len(set(status_list)) == 1:
             raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
         return status_list[0]
+
+    def batch_release_read_reference(self, idx_batch):
+        """
+        Release read reference on a batch of entries.
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks return
+                   index out of range while others do not
+
+        :param idx_batch: batch of indices of entries to be released
+        :return: a list of statuses, one for each idx
+                 SMOS_SUCCESS if successful,
+                 SMOS_FAIL if target entry does not exist
+        """
+        # release read reference
+        status_list_batch = []
+        self.lock.reader_enter()
+        for idx in idx_batch:
+            status_list = []
+            for track in self.track_list:
+                status = track.release_read_reference(idx=idx)
+                status_list.append(status)
+            status_list_batch.append(status_list)
+        self.lock.reader_leave()
+
+        # check integrity and return
+        for status_list in status_list_batch:
+            if not len(set(status_list)) == 1:
+                raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+        return [status_list[0] for status_list in status_list_batch]
 
     # delete
     def delete_entry_config(self, idx, force_delete=False):

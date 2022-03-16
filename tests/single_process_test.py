@@ -328,8 +328,8 @@ def main():
     # read
     status, handle_list, data_list = client.batch_read_from_object(name="obj1", entry_idx_batch=[0, 1, 3])
     print(data_list)
-    for handle in handle_list:
-        client.release_entry(object_handle=handle)
+    client.delete_entry(name="obj1", entry_idx=3, force_delete=True)
+    print(client.batch_release_entry(object_handle_batch=handle_list))
     delete_status = client.delete_entry(name="obj1", entry_idx=1) == SMOS.SMOS_SUCCESS
     print(f"Delete succeed: {delete_status}")
 

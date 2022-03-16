@@ -5,6 +5,7 @@ This file contains class Client, which should be instantiated in every process t
 
 from multiprocessing import shared_memory
 
+import SMOS
 import numpy as np
 
 import SMOS_exceptions
@@ -363,6 +364,43 @@ class Client:
         # return
         return status
 
+    def batch_release_entry(self, object_handle_batch: [utils.ObjectHandle]):
+        """
+        Release read references to batch of entries when reading is finished. Note that
+        after this operation, object_handle is destroyed. This is batched version that
+        reduces interaction.
+
+        Note that handles must be from the same SharedMemoryObject.
+
+        :exception SMOS_exceptions.SMOSInputTypeError: if object_handles are from
+                   different SharedMemoryObjects.
+
+        :param object_handle_batch: batch of entries to be released
+        :return: a list of statuses, one for each idx
+                 SMOS_SUCCESS if successful,
+                 SMOS_FAIL if target entry does not exist (has been deleted)
+        """
+        # check whether handles are from same object
+        object_name_batch = [object_handle.name for object_handle in object_handle_batch]
+        object_idx_batch = [object_handle.entry_idx for object_handle in object_handle_batch]
+        if not len(set(object_name_batch)) == 1:
+            raise SMOS_exceptions.SMOSInputTypeError(f"Handles are from {len(set(object_name_list))} different objects")
+
+        # release read reference
+        status_batch = safe_execute(target=self.store.batch_release_read_reference,
+                                    args=(object_name_batch[0], object_idx_batch,))
+
+        # clean up
+        for object_handle, status in zip(object_handle_batch, status_batch):
+            if status == SMOS_SUCCESS:
+                for buffer in object_handle.buf_list:
+                    buffer.release()
+                for shm in object_handle.shm_list:
+                    shm.close()
+
+        # return
+        return status_batch
+
     def delete_entry(self, name, entry_idx, force_delete=False):
         """
         Delete target entry from SharedMemoryObject specified by name. Note that this is lazy
@@ -385,7 +423,7 @@ class Client:
     #   read process:  pop_from_object          ->  free_handle
     #                  read_from_object         ->  release_entry
     #                  read_latest_from_object  ->  release_entry
-    #                  batch_read_from_object   ->  release_entry on each handle
+    #                  batch_read_from_object   ->  batch_release_entry
     def pop_from_object(self, name, force_pop=False):
         """
         Pop an entry from target object. This function reconstructs data to what it
