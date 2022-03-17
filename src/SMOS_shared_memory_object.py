@@ -154,6 +154,59 @@ class SharedMemoryObject:
         else:
             return SMOS_FAIL, None
 
+    def batch_read_entry_config(self, idx_batch):
+        """
+        Read entry config at given index and add read reference to that entry. This
+        is batched version that reduces interaction.
+
+        :exception SMOS_exceptions.SMOSTrackUnaligned: if some tracks return
+                   index out of range while others do not
+
+        :param idx_batch: batch of indices of entries to be read
+        :return: [SMOS_SUCCESS, entry_config_list_batch] if successful,
+                 [SMOS_FAIL, None] if some target entry does not exist
+        """
+        # init
+        entry_config_list_batch = []
+        status_list_batch = []
+        succeed_idx_batch = []
+        read_failure_flag = False
+
+        # read entry config
+        self.lock.reader_enter()
+        for idx in idx_batch:
+            # perform read on an entry
+            status_list = []
+            entry_config_list = []
+            for track in self.track_list:
+                status, entry_config = track.read_entry_config(idx=idx)
+                status_list.append(status)
+                entry_config_list.append(entry_config)
+            # check if succeed
+            if not status_list[0] == SMOS_SUCCESS:
+                # remove invalid read reference and break
+                for succeed_idx in succeed_idx_batch:
+                    for track in self.track_list:
+                        release_status = track.release_read_reference(idx=succeed_idx)
+                        assert release_status == SMOS_SUCCESS
+                read_failure_flag = True
+                break
+            entry_config_list_batch.append(entry_config_list)
+            status_list_batch.append(status_list)
+            succeed_idx_batch.append(idx)
+        self.lock.reader_leave()
+
+        # check data integrity
+        for status_list in status_list_batch:
+            if not len(set(status_list)) == 1:
+                raise SMOS_exceptions.SMOSTrackUnaligned("Track unaligned.")
+
+        # return
+        if not read_failure_flag:
+            return SMOS_SUCCESS, entry_config_list_batch
+        else:
+            return SMOS_FAIL, None
+
     def read_latest_entry_config(self):
         """
         Read entry config of latest entry and add read reference to that entry.

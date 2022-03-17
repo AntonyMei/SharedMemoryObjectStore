@@ -176,28 +176,13 @@ class SharedMemoryObjectStore:
         """
         # query target SharedMemoryObject
         self.global_lock.reader_enter()
-
-        # check if object exists
         if name not in self.object_dict:
             raise SMOS_exceptions.SMOSObjectNotFoundError(f"Object with name {name} not found.")
-
-        # query
-        entry_config_list_batch = []
-        batch_status = SMOS_SUCCESS
-        for idx in idx_batch:
-            status, entry_config_list = self.object_dict[name].read_entry_config(idx=idx)
-            if not status == SMOS_SUCCESS:
-                # remove invalid read references
-                for success_idx in range(len(entry_config_list_batch)):
-                    self.object_dict[name].release_read_reference(idx=idx_batch[success_idx])
-                batch_status = SMOS_FAIL
-                break
-            entry_config_list_batch.append(entry_config_list)
-
+        status, entry_config_list_batch = self.object_dict[name].batch_read_entry_config(idx_batch=idx_batch)
         self.global_lock.reader_leave()
 
         # return
-        if batch_status == SMOS_SUCCESS:
+        if status == SMOS_SUCCESS:
             return SMOS_SUCCESS, entry_config_list_batch
         else:
             return SMOS_FAIL, None
