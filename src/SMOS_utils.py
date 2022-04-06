@@ -333,7 +333,7 @@ def deserialize(data_stream):
     :param data_stream: data stream to be deserialized
     :return: deserialized_object
     """
-    deserialized_object = pickle.loads(data=data_stream)
+    deserialized_object = pickle.loads(data_stream)
     return deserialized_object
 
 
