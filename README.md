@@ -8,12 +8,45 @@ from more than 64 processes (i.e., it has very little control overheads). The hi
 two ways, as shown in section ***Technical Details***.
 
 ## Installation
-SMOS has been released as a python package to PyPI. It supports python>3.8 with linux. To install SMOS, simply run:
+SMOS has been released as a python package to PyPI. It supports python>3.8 on Linux. To install SMOS, simply run:
 
     pip install SMOS_antony
 
 ## Usage
-TODO
+### A Hello World Example of Interprocess Communication with SMOS
+Step 1: Start the SMOS server. Note that `server.start()` will run the server in a separate process
+and is non-blocking.
+
+    import SMOS
+    import time
+
+    try:
+        server = SMOS.Server(SMOS.ConnectionDescriptor(ip="localhost", port=12345, authkey=b"some_key"))
+        server.start()
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        server.stop()
+
+Step 2: Start a process that sends message:
+   
+    import SMOS
+
+    client = SMOS.Client(SMOS.ConnectionDescriptor(ip="localhost", port=12345, authkey=b"some_key"))
+    client.put(name="test_obj", data="Hello World!")
+
+Step 3: Start a process that reads message:
+
+    import SMOS
+
+    client = SMOS.Client(SMOS.ConnectionDescriptor(ip="localhost", port=12345, authkey=b"some_key"))
+    msg = client.get(name="test_obj")
+    print(msg)
+
+Step 4: The message can be read by different processes multiple times until some process calls the following
+command to delete the underlying shared memory object:
+
+    client.remove_object(name="test_obj")
 
 ## Technical Details
 
