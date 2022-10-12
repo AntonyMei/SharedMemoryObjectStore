@@ -48,6 +48,34 @@ command to delete the underlying shared memory object:
 
     client.remove_object(name="test_obj")
 
+### Advanced Usages
+Here we show advanced APIs of SMOS. We plan to make this section into a separate documentation website with later
+major releases. First, we give a general descriptions about the possible workflows with SMOS. There are two general
+workflows with shared memory objects. The two workflows are compatible with each other.
+
+    workflow 1:  create_object  ->  [entry operations]  ->  remove_object
+    workflow 2:  put            ->  (multiple) get
+
+Each shared memory object can also be used as a shared memory queue (array, FIFO, whatever you call it) and support
+the following entry operations:
+
+ - fine-grained operations (zero copy)
+
+       create procedure:  create_entry  ->  open_shm  ->  commit_entry
+       r/w procedure:     open_entry    ->  open_shm  ->  release_entry
+       delete procedure:  delete_entry
+    
+ - coarse-grained operations (queue API)
+   
+       write process: push_to_object
+       read process:  pop_from_object          ->  free_handle
+                      read_from_object         ->  release_entry
+                      read_latest_from_object  ->  release_entry
+                      batch_read_from_object   ->  batch_release_entry
+
+For detailed usage of each function, you can refer to `/src/SMOS_client.py`. We plan to set up a website for documentation
+of SMOS in the future.
+
 ## Technical Details
 
 ### Four Stage Transition model
